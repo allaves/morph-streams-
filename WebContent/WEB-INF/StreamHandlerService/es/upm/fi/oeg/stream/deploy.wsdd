@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- Use this file to deploy some handlers/chains and services      --><!-- Two ways to do this:                                           --><!--   java org.apache.axis.client.AdminClient deploy.wsdd          --><!--      after the axis server is running                          --><!-- or                                                             --><!--   java org.apache.axis.utils.Admin client|server deploy.wsdd   --><!--      from the same directory that the Axis engine runs         --><deployment xmlns="http://xml.apache.org/axis/wsdd/" xmlns:java="http://xml.apache.org/axis/wsdd/providers/java">
+
+  <!-- Services from StreamHandlerService WSDL service -->
+
+  <service name="StreamHandler" provider="java:RPC" style="wrapped" use="literal">
+      <parameter name="wsdlTargetNamespace" value="http://stream.oeg.fi.upm.es"/>
+      <parameter name="wsdlServiceElement" value="StreamHandlerService"/>
+      <parameter name="schemaQualified" value="http://stream.oeg.fi.upm.es"/>
+      <parameter name="wsdlServicePort" value="StreamHandler"/>
+      <parameter name="className" value="es.upm.fi.oeg.stream.StreamHandler"/>
+      <parameter name="wsdlPortType" value="StreamHandler"/>
+      <parameter name="typeMappingVersion" value="1.2"/>
+      <operation xmlns:operNS="http://stream.oeg.fi.upm.es" xmlns:retNS="http://stream.oeg.fi.upm.es" xmlns:rtns="http://www.w3.org/2001/XMLSchema" name="deregisterStream" qname="operNS:deregisterStream" returnQName="retNS:deregisterStreamReturn" returnType="rtns:string" soapAction="">
+        <parameter xmlns:pns="http://stream.oeg.fi.upm.es" xmlns:tns="http://www.w3.org/2001/XMLSchema" qname="pns:streamId" type="tns:string"/>
+      </operation>
+      <operation xmlns:operNS="http://stream.oeg.fi.upm.es" xmlns:retNS="http://stream.oeg.fi.upm.es" xmlns:rtns="http://www.w3.org/2001/XMLSchema" name="registerStream" qname="operNS:registerStream" returnQName="retNS:registerStreamReturn" returnType="rtns:string" soapAction="">
+        <parameter xmlns:pns="http://stream.oeg.fi.upm.es" xmlns:tns="http://www.w3.org/2001/XMLSchema" qname="pns:streamId" type="tns:string"/>
+      </operation>
+      <parameter name="allowedMethods" value="registerStream deregisterStream"/>
+
+  </service>
+</deployment>

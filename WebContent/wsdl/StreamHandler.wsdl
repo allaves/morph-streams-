@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="http://stream.oeg.fi.upm.es" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="http://stream.oeg.fi.upm.es" xmlns:intf="http://stream.oeg.fi.upm.es" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<!--WSDL created by Apache Axis version: 1.4
+Built on Apr 22, 2006 (06:55:48 PDT)-->
+ <wsdl:types>
+  <schema elementFormDefault="qualified" targetNamespace="http://stream.oeg.fi.upm.es" xmlns="http://www.w3.org/2001/XMLSchema">
+   <element name="deregisterStream">
+    <complexType>
+     <sequence>
+      <element name="streamId" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="deregisterStreamResponse">
+    <complexType>
+     <sequence>
+      <element name="deregisterStreamReturn" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="registerStream">
+    <complexType>
+     <sequence>
+      <element name="streamId" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="registerStreamResponse">
+    <complexType>
+     <sequence>
+      <element name="registerStreamReturn" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+  </schema>
+ </wsdl:types>
+
+   <wsdl:message name="deregisterStreamRequest">
+
+      <wsdl:part element="impl:deregisterStream" name="parameters">
+
+      </wsdl:part>
+
+   </wsdl:message>
+
+   <wsdl:message name="registerStreamResponse">
+
+      <wsdl:part element="impl:registerStreamResponse" name="parameters">
+
+      </wsdl:part>
+
+   </wsdl:message>
+
+   <wsdl:message name="deregisterStreamResponse">
+
+      <wsdl:part element="impl:deregisterStreamResponse" name="parameters">
+
+      </wsdl:part>
+
+   </wsdl:message>
+
+   <wsdl:message name="registerStreamRequest">
+
+      <wsdl:part element="impl:registerStream" name="parameters">
+
+      </wsdl:part>
+
+   </wsdl:message>
+
+   <wsdl:portType name="StreamHandler">
+
+      <wsdl:operation name="deregisterStream">
+
+         <wsdl:input message="impl:deregisterStreamRequest" name="deregisterStreamRequest">
+
+       </wsdl:input>
+
+         <wsdl:output message="impl:deregisterStreamResponse" name="deregisterStreamResponse">
+
+       </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="registerStream">
+
+         <wsdl:input message="impl:registerStreamRequest" name="registerStreamRequest">
+
+       </wsdl:input>
+
+         <wsdl:output message="impl:registerStreamResponse" name="registerStreamResponse">
+
+       </wsdl:output>
+
+      </wsdl:operation>
+
+   </wsdl:portType>
+
+   <wsdl:binding name="StreamHandlerSoapBinding" type="impl:StreamHandler">
+
+      <wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+      <wsdl:operation name="deregisterStream">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="deregisterStreamRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="deregisterStreamResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="registerStream">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="registerStreamRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="registerStreamResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+   </wsdl:binding>
+
+   <wsdl:service name="StreamHandlerService">
+
+      <wsdl:port binding="impl:StreamHandlerSoapBinding" name="StreamHandler">
+
+         <wsdlsoap:address location="http://localhost:8080/morph-streams-WS/services/StreamHandler"/>
+
+      </wsdl:port>
+
+   </wsdl:service>
+
+</wsdl:definitions>
