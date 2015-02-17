@@ -14,7 +14,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.upm.fi.oeg.stream.Stream.FORMAT;
-import es.upm.fi.oeg.utils.MyAuthenticator;
 
 public class TestStreamHandler {
 	

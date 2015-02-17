@@ -23,8 +23,8 @@ public class CSVPublisher implements Runnable {
 	public void run() {
 		try {
 			// Get data from JSON source
-			String user = "allaves";
-			String pwd = "cacafut1";
+			String user = "user";
+			String pwd = "pwd";
 			String authString = user + ":" + pwd;
 			byte[] authEncodedBytes = Base64.encodeBase64(authString.getBytes());
 			String authStringEncoded = new String(authEncodedBytes);
