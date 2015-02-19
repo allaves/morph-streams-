@@ -9,7 +9,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
 /*
- * This thread gets data from the JSON source and publish it to Kafka
+ * This thread gets data from a CSV source and publish it to Kafka
  */
 public class CSVPublisher implements Runnable {
 	
@@ -22,18 +22,7 @@ public class CSVPublisher implements Runnable {
 	@Override
 	public void run() {
 		try {
-			// Get data from JSON source
-			String user = "user";
-			String pwd = "pwd";
-			String authString = user + ":" + pwd;
-			byte[] authEncodedBytes = Base64.encodeBase64(authString.getBytes());
-			String authStringEncoded = new String(authEncodedBytes);
-			
 			URLConnection connection = stream.getUrl().openConnection();
-			
-			connection.setRequestProperty("Authorization", "Basic " + authStringEncoded);
-			
-			//connection.connect();
 			BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 			StringBuilder strBuilder = new StringBuilder();
 			String line = null;

@@ -122,7 +122,7 @@ public class StreamHandler {
 		// The publishing procedure varies depending on the data format
 		if(stream.getFormat().equalsIgnoreCase(FORMAT.JSON.toString())) {
 			// Creates a thread that reads from the JSON data source and sends messages to Kafka
-			final Runnable jsonPublisher = new CSVPublisher(stream);
+			final Runnable jsonPublisher = new JSONPublisher(stream);
 			// Schedule the thread to be executed regularly - at stream rate frecuency
 			final ScheduledFuture<?> jsonPublisherTask = 
 					scheduler.scheduleAtFixedRate(jsonPublisher, streamDelay, stream.getRate(), TimeUnit.MILLISECONDS);

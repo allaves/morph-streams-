@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>morph-streams-WS</groupId>
-  <artifactId>morph-streams-WS</artifactId>
+  <groupId>morph-streams-plus</groupId>
+  <artifactId>morph-streams-plus-plus</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <repositories>
   	<repository>
@@ -79,6 +79,11 @@
   		<groupId>es.upm.fi.oeg.morph</groupId>
   		<artifactId>query-rewriting</artifactId>
   		<version>1.0.10</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>com.sun.jersey</groupId>
+  		<artifactId>jersey-client</artifactId>
+  		<version>1.19</version>
   	</dependency>
   </dependencies>
   <packaging>war</packaging>
