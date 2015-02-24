@@ -1,25 +1,20 @@
 package es.upm.fi.oeg.stream;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.TimeUnit;
 import es.upm.fi.oeg.stream.Stream.FORMAT;
-import scala.collection.mutable.DefaultEntry;
-import storm.kafka.KafkaSpout;
 
 /*
  * Singleton
@@ -100,7 +95,41 @@ public class StreamHandler {
 	/*
 	 * Registers a stream (if it was not in the registry) and starts publishing data to Kafka
 	 */
-	public boolean registerStream(Stream stream) {
+	public String registerStream(String url, int rate, FORMAT format, String topic) {
+		Stream stream;
+		try {
+			stream = new Stream(new URL(url), rate, format, topic);
+		} catch (MalformedURLException e) {
+			log.error(e.getMessage());
+			return null;
+		}
+		if (registerStream(stream)) {
+			return stream.getId();
+		}
+		return null;
+	}
+	
+	/*
+	 * Registers a stream (if it was not in the registry) and starts publishing data to Kafka
+	 */
+	public String registerStreamWithFormBasedLogin(String url, int rate, FORMAT format, String topic, String user, String password, String urlLogin) {
+		Stream stream;
+		try {
+			stream = new Stream(new URL(url), rate, format, topic, user, password, new URL(urlLogin));
+		} catch (MalformedURLException e) {
+			log.error(e.getMessage());
+			return null;
+		}
+		if (registerStream(stream)) {
+			return stream.getId();
+		}
+		return null;
+	}
+	
+	/*
+	 * Registers a stream (if it was not in the registry) and starts publishing data to Kafka
+	 */
+	private boolean registerStream(Stream stream) {
 		// Checks if the stream was already registered
 		if (!streamRegistry.containsKey(stream.getId())) {
 			// Registers the new stream
@@ -108,7 +137,6 @@ public class StreamHandler {
 			log.info("Stream registered with ID " + stream.getId());
 			// Initiates the producer to start publishing data
 			startDataPublishing(stream);
-			
 			return true;
 		}
 		log.error("ERROR! This stream was already registered: " + stream.getId());
@@ -119,27 +147,12 @@ public class StreamHandler {
 	 * Initiates the data publishing to Kafka
 	 */
 	public void startDataPublishing(Stream stream) {
-		// The publishing procedure varies depending on the data format
-		if(stream.getFormat().equalsIgnoreCase(FORMAT.JSON.toString())) {
-			// Creates a thread that reads from the JSON data source and sends messages to Kafka
-			final Runnable jsonPublisher = new JSONPublisher(stream);
-			// Schedule the thread to be executed regularly - at stream rate frecuency
-			final ScheduledFuture<?> jsonPublisherTask = 
-					scheduler.scheduleAtFixedRate(jsonPublisher, streamDelay, stream.getRate(), TimeUnit.MILLISECONDS);
-			scheduledStreamsMap.put(stream.getId(), jsonPublisherTask);
-		}
-		else if(stream.getFormat().equalsIgnoreCase(FORMAT.CSV.toString())) {
-			// Creates a thread that reads from the CSV data source and sends messages to Kafka
-			final Runnable csvPublisher = new CSVPublisher(stream);
-			// Schedule the thread to be executed regularly - at stream rate frecuency
-			final ScheduledFuture<?> csvPublisherTask = 
-					scheduler.scheduleAtFixedRate(csvPublisher, streamDelay, stream.getRate(), TimeUnit.MILLISECONDS);
-			scheduledStreamsMap.put(stream.getId(), csvPublisherTask);
-		}
-		else if (stream.getFormat().equalsIgnoreCase(FORMAT.RDF.toString())) {
-			// Do something
-			
-		}
+		// Creates a thread that reads from the JSON data source and sends messages to Kafka
+		final Runnable streamPublisher = new StreamPublisher(stream);
+		// Schedule the thread to be executed regularly - at stream rate frecuency
+		final ScheduledFuture<?> streamPublisherTask = 
+				scheduler.scheduleAtFixedRate(streamPublisher, streamDelay, stream.getRate(), TimeUnit.MILLISECONDS);
+		scheduledStreamsMap.put(stream.getId(), streamPublisherTask);
 	}
 
 	
@@ -170,7 +183,7 @@ public class StreamHandler {
 	}
 
 	
-	public Collection<Stream> getRegisteredStreams() {
-		return streamRegistry.values();
+	public Collection<String> getRegisteredStreams() {
+		return streamRegistry.keySet();
 	}
 }

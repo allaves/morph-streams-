@@ -2,37 +2,25 @@ package es.upm.fi.oeg.stream;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URLConnection;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.esotericsoftware.minlog.Log;
-import com.google.gson.Gson;
-import com.google.gson.stream.JsonReader;
 
 import es.upm.fi.oeg.utils.FormBasedAuthentication;
 
 
 /*
- * This thread gets data from the JSON source and publish it to Kafka
+ * This thread requests data the source and publish it to Kafka
  */
-public class JSONPublisher implements Runnable {
-	private Logger log = LoggerFactory.getLogger(JSONPublisher.class);
+public class StreamPublisher implements Runnable {
+	private Logger log = LoggerFactory.getLogger(StreamPublisher.class);
 	private Stream stream;
 	private FormBasedAuthentication auth;
 
-	public JSONPublisher(Stream stream) {
+	public StreamPublisher(Stream stream) {
 		this.stream = stream;
 	}
 	
@@ -57,7 +45,7 @@ public class JSONPublisher implements Runnable {
 			// If the stream does not have authentication credentials
 			else {
 				// No need for authentication
-				// Get data from JSON source
+				// Get data from the source
 				URLConnection connection = stream.getUrl().openConnection();
 				BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 				String line = null;
