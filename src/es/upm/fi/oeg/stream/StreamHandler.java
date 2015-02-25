@@ -63,7 +63,6 @@ public class StreamHandler {
 	public Object clone() throws CloneNotSupportedException {
 		throw new CloneNotSupportedException();
 	}
-
 	/*
 	 * Singleton stuff ends
 	 */
@@ -134,13 +133,15 @@ public class StreamHandler {
 		if (!streamRegistry.containsKey(stream.getId())) {
 			// Registers the new stream
 			streamRegistry.put(stream.getId(), stream);
-			log.info("Stream registered with ID " + stream.getId());
+			log.info("Stream registered with ID: " + stream.getId());
 			// Initiates the producer to start publishing data
 			startDataPublishing(stream);
 			return true;
 		}
-		log.error("ERROR! This stream was already registered: " + stream.getId());
-		return false;
+		else {
+			log.error("ERROR! This stream was already registered: " + stream.getId());
+			return false;
+		}
 	}
 	
 	/*
@@ -183,6 +184,9 @@ public class StreamHandler {
 	}
 
 	
+	/*
+	 * Returns the ids of the registered streams
+	 */
 	public Collection<String> getRegisteredStreams() {
 		return streamRegistry.keySet();
 	}

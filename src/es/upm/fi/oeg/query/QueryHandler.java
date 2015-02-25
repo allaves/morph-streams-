@@ -1,18 +1,25 @@
 package es.upm.fi.oeg.query;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import es.upm.fi.oeg.morph.stream.evaluate.QueryEvaluator;
 import es.upm.fi.oeg.morph.stream.query.SqlQuery;
 import es.upm.fi.oeg.stream.StreamHandler;
 
+/*
+ * Handles query registration and validity
+ */
 public class QueryHandler {
 
 	private Logger log = LoggerFactory.getLogger(QueryHandler.class);
 	
-	private HashMap<Integer, Query> queryRegistry;
+	private HashMap<String, Query> queryRegistry;
+	
 	
 	/*
 	 * Singleton stuff starts
@@ -20,8 +27,7 @@ public class QueryHandler {
 	private static QueryHandler instance;
 	
 	private QueryHandler() {
-		queryRegistry = new HashMap<Integer, Query>();
-		
+		queryRegistry = new HashMap<String, Query>();
 	}
 	
 	public static QueryHandler getInstance() {
@@ -53,20 +59,26 @@ public class QueryHandler {
 	 * Registers a query in SPARQLStream
 	 * Returns the query id if successful; null if not.
 	 */
-	public Integer registerQuery(String stringQuery) {
-		// TODO: Checks that the SPARQLStream syntax is correct
-		
+	public String registerQuery(String stringQuery) {
+		// Creates a new object Query
+		Query query = new Query(stringQuery);
 		// Puts query into the registry
-		int queryId = stringQuery.hashCode();
+		String queryId = String.valueOf(stringQuery.hashCode());
 		if (!queryRegistry.containsKey(queryId)) {
-			queryRegistry.put(queryId, new Query(stringQuery));
+			queryRegistry.put(queryId, query);
 			log.info("New query registered with id: " + queryId);
 			log.info(stringQuery);
-			// TODO: Checks that the streams are registered
-			// TODO: Converts query to algebra
-			// TODO: Passes topology to the TopologyManager
-			
-			return queryId;
+			// Checks that the stream sources are registered
+			//if (!streamAvailability(query).isEmpty()) {
+				// TODO: Converts query to algebra
+				// TODO: Passes topology to the TopologyManager
+				
+				return String.valueOf(queryId);
+//			}
+//			else {
+//				log.warn("WARNING! Stream sources are not available, so no results will be returned at the moment.");
+//				return null;
+//			}
 		}
 		log.error("ERROR! Query already registered.");
 		return null;
@@ -90,7 +102,21 @@ public class QueryHandler {
 	}
 	
 	
-	
+	/*
+	 * Are the data stream sources requested in the query available?
+	 * Returns an array with the stream ids available if any, or an empty array.
+	 */
+	public Collection<String> streamAvailability(Query query) {
+		ArrayList<String> availableStreams = new ArrayList<String>();
+		for (String registeredStreamId : StreamHandler.getInstance().getRegisteredStreams()) {
+			for (String queryStreamUrl : query.getStreams()) {
+				if (registeredStreamId.contains(queryStreamUrl)) {
+					availableStreams.add(registeredStreamId);
+				}
+			}
+		}
+		return availableStreams;
+	}
 	
 	
 }
