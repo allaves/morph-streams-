@@ -69,16 +69,16 @@ public class QueryHandler {
 			log.info("New query registered with id: " + queryId);
 			log.info(stringQuery);
 			// Checks that the stream sources are registered
-			//if (!streamAvailability(query).isEmpty()) {
+			if (!streamAvailability(query).isEmpty()) {
 				// TODO: Converts query to algebra
 				// TODO: Passes topology to the TopologyManager
 				
 				return String.valueOf(queryId);
-//			}
-//			else {
-//				log.warn("WARNING! Stream sources are not available, so no results will be returned at the moment.");
-//				return null;
-//			}
+			}
+			else {
+				log.warn("WARNING! Stream sources are not available, so no results will be returned at the moment.");
+				return null;
+			}
 		}
 		log.error("ERROR! Query already registered.");
 		return null;

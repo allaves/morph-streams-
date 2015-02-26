@@ -17,7 +17,7 @@
   	</dependency>
   	<dependency>
 	    <groupId>org.apache.kafka</groupId>
-	    <artifactId>kafka-clients</artifactId>
+	    <artifactId>kafka_2.9.2</artifactId>
 	    <version>0.8.2.0</version>
 	</dependency>
 	<dependency>

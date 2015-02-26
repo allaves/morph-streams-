@@ -33,9 +33,13 @@ public class Query {
 	public void setStringQuery(String stringQuery) {
 		this.stringQuery = stringQuery;
 	}
+	
+	public StreamQuery getStreamQuery() {
+		return streamQuery;
+	}
 
 	/*
-	 * Returns the stream sources in the query
+	 * Returns the stream sources in the query as strings
 	 */
 	public ArrayList<String> getStreams() {
 		ArrayList<String> streams = new ArrayList<String>();
