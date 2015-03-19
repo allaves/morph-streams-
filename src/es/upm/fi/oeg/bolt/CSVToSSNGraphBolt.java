@@ -42,7 +42,17 @@ import backtype.storm.tuple.Values;
 public class CSVToSSNGraphBolt extends BaseRichBolt{
 	
 	private static final long serialVersionUID = 8325660643098345088L;
-
+	
+	public static String MAPPING_OBSERVATION_ID = "observationId";
+	public static String MAPPING_OBSERVED_PROPERTY = "ssn:observedProperty";
+	public static String MAPPING_DATA_VALUE = "ssn:hasDataValue";
+	public static String MAPPING_OBSERVATION_SAMPLING_TIME = "ssn:observationSamplingTime";
+	public static String MAPPING_OBSERVATION_RESULT_TIME = "ssn:observationResultTime";
+	public static String MAPPING_FEATURE_OF_INTEREST = "ssn:featureOfInterest";
+	public static String MAPPING_OBSERVED_BY = "ssn:observedBy";
+	public static String MAPPING_GEOSPARQL_WKT = "geosparql:asWKT";
+	public static String MAPPING_CRS = "crs";
+	
 	private static String NS_SSN = "http://purl.oclc.org/NET/ssnx/ssn#";
 	private static String NS_GEOSPARQL = "http://www.opengis.net/ont/geosparql#";
 	private static String NS_RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
@@ -50,7 +60,6 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 	private OutputCollector collector;
 	private String namespace;
-	private String crs;
 	private Map conf;
 	
 	
@@ -58,14 +67,13 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 	 * The constructor of the bolt can receive some parameters that do not vary for the sensor data stream:
 	 * namespace, observed property, and coordinate reference system.
 	 */
-	public CSVToSSNGraphBolt(String namespace, String crs) {
+	public CSVToSSNGraphBolt(String namespace) {
 		if (namespace.endsWith("/") || namespace.endsWith("#")) {
 			this.namespace = namespace.substring(0, -1);
 		}
 		else {
 			this.namespace = namespace;
 		}
-		this.crs = crs;
 	}
 
 	@Override
@@ -161,6 +169,11 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 		// We assume that the spatial location is a point given by two coordinates x and y in a String, i.e. "x y"
 		// TODO: add support for lines and polygons.
 		if (conf.get("geosparql:asWKT") != null) {
+			String crs = (String)conf.get("crs");
+			if (crs == null) {
+				// If no crs is provided, we assume that the data follows the global default EPSG:4326.
+				crs = "http://www.opengis.net/def/crs/EPSG/0/4326";
+			}
 			String geom = namespace + "/geom/" + tuple.hashCode();
 			// e.g. http://example.org/obs/0001 geosparql:hasGeometry http://example.org/geom/0002
 			graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId), 
