@@ -14,6 +14,20 @@
   		<groupId>org.apache.storm</groupId>
   		<artifactId>storm-kafka</artifactId>
     	<version>0.9.3</version>
+    	<exclusions>
+		  <exclusion> 
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-log4j12</artifactId>
+		  </exclusion>
+		  <exclusion> 
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-api</artifactId>
+		  </exclusion>
+	  	  <exclusion> 
+		    <groupId>log4j</groupId>
+		    <artifactId>log4j</artifactId>
+		  </exclusion>
+		</exclusions>
   	</dependency>
   	<dependency>
 	    <groupId>org.apache.kafka</groupId>
@@ -24,16 +38,25 @@
       <groupId>org.apache.storm</groupId>
       <artifactId>storm-core</artifactId>
       <version>0.9.3</version>
+      <exclusions>
+		  <exclusion> 
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-log4j12</artifactId>
+		  </exclusion>
+		  <exclusion> 
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-api</artifactId>
+		  </exclusion>
+	  	  <exclusion> 
+		    <groupId>log4j</groupId>
+		    <artifactId>log4j</artifactId>
+		  </exclusion>
+		</exclusions>
     </dependency>
     <dependency>
 	    <groupId>com.google.guava</groupId>
 	    <artifactId>guava</artifactId>
 	    <version>17.0</version>
-	</dependency>
-	<dependency>
-	    <groupId>org.clojars.brenden</groupId>
-	    <artifactId>trident-memcached</artifactId>
-	    <version>0.0.6</version>
 	</dependency>
 	<dependency>
 	    <groupId>org.apache.jena</groupId>
@@ -43,6 +66,10 @@
 		  <exclusion> 
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>slf4j-log4j12</artifactId>
+		  </exclusion>
+		  <exclusion> 
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-api</artifactId>
 		  </exclusion>
 	  	  <exclusion> 
 		    <groupId>log4j</groupId>
@@ -58,6 +85,10 @@
 		  <exclusion> 
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>slf4j-log4j12</artifactId>
+		  </exclusion>
+		  <exclusion> 
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-api</artifactId>
 		  </exclusion>
 	  	  <exclusion> 
 		    <groupId>log4j</groupId>
@@ -79,6 +110,20 @@
   		<groupId>es.upm.fi.oeg.morph</groupId>
   		<artifactId>query-rewriting</artifactId>
   		<version>1.0.10</version>
+  		<exclusions>
+		  <exclusion> 
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-log4j12</artifactId>
+		  </exclusion>
+		  <exclusion> 
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-api</artifactId>
+		  </exclusion>
+	  	  <exclusion> 
+		    <groupId>log4j</groupId>
+		    <artifactId>log4j</artifactId>
+		  </exclusion>
+		</exclusions>
   	</dependency>
   	<dependency>
   		<groupId>com.sun.jersey</groupId>

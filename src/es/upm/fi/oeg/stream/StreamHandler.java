@@ -2,6 +2,7 @@ package es.upm.fi.oeg.stream;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Properties;
@@ -13,6 +14,8 @@ import java.util.concurrent.TimeUnit;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 
 import es.upm.fi.oeg.stream.Stream.FORMAT;
 
@@ -94,40 +97,6 @@ public class StreamHandler {
 	/*
 	 * Registers a stream (if it was not in the registry) and starts publishing data to Kafka
 	 */
-	public String registerStream(String url, int rate, FORMAT format, String topic) {
-		Stream stream;
-		try {
-			stream = new Stream(new URL(url), rate, format, topic);
-		} catch (MalformedURLException e) {
-			log.error(e.getMessage());
-			return null;
-		}
-		if (registerStream(stream)) {
-			return stream.getId();
-		}
-		return null;
-	}
-	
-	/*
-	 * Registers a stream (if it was not in the registry) and starts publishing data to Kafka
-	 */
-	public String registerStreamWithFormBasedLogin(String url, int rate, FORMAT format, String topic, String user, String password, String urlLogin) {
-		Stream stream;
-		try {
-			stream = new Stream(new URL(url), rate, format, topic, user, password, new URL(urlLogin));
-		} catch (MalformedURLException e) {
-			log.error(e.getMessage());
-			return null;
-		}
-		if (registerStream(stream)) {
-			return stream.getId();
-		}
-		return null;
-	}
-	
-	/*
-	 * Registers a stream (if it was not in the registry) and starts publishing data to Kafka
-	 */
 	private boolean registerStream(Stream stream) {
 		// Checks if the stream was already registered
 		if (!streamRegistry.containsKey(stream.getId())) {
@@ -144,15 +113,53 @@ public class StreamHandler {
 		}
 	}
 	
+	
+	/*
+	 * Registers a stream (if it was not in the registry) and starts publishing data to Kafka
+	 */
+	public String registerCSVStream(String url, int millisecondsRate, FORMAT format, String topic, char delimiter, 
+			String[] fieldNames, XSDDatatype[] fieldDataTypes, HashMap<String, String> ssnMapping) {
+		Stream stream;
+		try {
+			stream = new CSVStream(new URL(url), millisecondsRate, format, topic, delimiter, fieldNames, fieldDataTypes, ssnMapping);
+		} catch (MalformedURLException e) {
+			log.error(e.getMessage());
+			return null;
+		}
+		if (registerStream(stream)) {
+			return stream.getId();
+		}
+		return null;
+	}
+	
+	/*
+	 * Registers a stream (if it was not in the registry) and starts publishing data to Kafka
+	 */
+	public String registerStreamWithFormBasedLogin(String url, int millisecondsRate, FORMAT format, String topic, 
+			String user, String password, String urlLogin) {
+		Stream stream;
+		try {
+			stream = new Stream(new URL(url), millisecondsRate, format, topic, user, password, new URL(urlLogin));
+		} catch (MalformedURLException e) {
+			log.error(e.getMessage());
+			return null;
+		}
+		if (registerStream(stream)) {
+			return stream.getId();
+		}
+		return null;
+	}
+	
+	
 	/*
 	 * Initiates the data publishing to Kafka
 	 */
 	public void startDataPublishing(Stream stream) {
-		// Creates a thread that reads from the JSON data source and sends messages to Kafka
+		// Creates a thread that reads from the data source and sends messages to Kafka
 		final Runnable streamPublisher = new StreamPublisher(stream);
 		// Schedule the thread to be executed regularly - at stream rate frecuency
 		final ScheduledFuture<?> streamPublisherTask = 
-				scheduler.scheduleAtFixedRate(streamPublisher, streamDelay, stream.getRate(), TimeUnit.MILLISECONDS);
+				scheduler.scheduleAtFixedRate(streamPublisher, streamDelay, stream.getMillisecondsRate(), TimeUnit.MILLISECONDS);
 		scheduledStreamsMap.put(stream.getId(), streamPublisherTask);
 	}
 
@@ -190,4 +197,5 @@ public class StreamHandler {
 	public Collection<String> getRegisteredStreams() {
 		return streamRegistry.keySet();
 	}
+
 }

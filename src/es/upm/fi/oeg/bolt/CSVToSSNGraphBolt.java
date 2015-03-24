@@ -4,25 +4,9 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.swing.text.DateFormatter;
-
-import org.apache.jena.riot.RDFDataMgr;
+import org.apache.log4j.Logger;
 import org.apache.log4j.lf5.util.DateFormatManager;
-import org.apache.xerces.xs.datatypes.XSDateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.hp.hpl.jena.datatypes.DatatypeFormatException;
-import com.hp.hpl.jena.datatypes.RDFDatatype;
-import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
-import com.hp.hpl.jena.graph.Factory;
-import com.hp.hpl.jena.graph.Graph;
-import com.hp.hpl.jena.graph.NodeFactory;
-import com.hp.hpl.jena.graph.Triple;
-import com.hp.hpl.jena.graph.impl.LiteralLabel;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
-
-import backtype.storm.Config;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -30,6 +14,13 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+
+import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
+import com.hp.hpl.jena.graph.Factory;
+import com.hp.hpl.jena.graph.Graph;
+import com.hp.hpl.jena.rdf.model.ResourceFactory;
+
+import es.upm.fi.oeg.utils.SSNMapping;
 
 /*
  * Bolt that converts input observations in CSV (field-named tuples) to Semantic Sensor Network (SSN) graphs.
@@ -43,21 +34,7 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 	
 	private static final long serialVersionUID = 8325660643098345088L;
 	
-	public static String MAPPING_OBSERVATION_ID = "observationId";
-	public static String MAPPING_OBSERVED_PROPERTY = "ssn:observedProperty";
-	public static String MAPPING_DATA_VALUE = "ssn:hasDataValue";
-	public static String MAPPING_OBSERVATION_SAMPLING_TIME = "ssn:observationSamplingTime";
-	public static String MAPPING_OBSERVATION_RESULT_TIME = "ssn:observationResultTime";
-	public static String MAPPING_FEATURE_OF_INTEREST = "ssn:featureOfInterest";
-	public static String MAPPING_OBSERVED_BY = "ssn:observedBy";
-	public static String MAPPING_GEOSPARQL_WKT = "geosparql:asWKT";
-	public static String MAPPING_CRS = "crs";
-	
-	private static String NS_SSN = "http://purl.oclc.org/NET/ssnx/ssn#";
-	private static String NS_GEOSPARQL = "http://www.opengis.net/ont/geosparql#";
-	private static String NS_RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
-	
-	private Logger log = LoggerFactory.getLogger(this.getClass());
+	private Logger log = Logger.getLogger(this.getClass());
 	private OutputCollector collector;
 	private String namespace;
 	private Map conf;
@@ -96,15 +73,23 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 		}
 		// e.g. http://example.org/obs/0001 rdf:type ssn:Observation
 		graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId), 
-			ResourceFactory.createProperty(NS_RDF, "type"), 
-			ResourceFactory.createResource(NS_SSN + "Observation")).asTriple());
+			ResourceFactory.createProperty(SSNMapping.NS_RDF, "type"), 
+			ResourceFactory.createResource(SSNMapping.NS_SSN + "Observation")).asTriple());
 		
 		// ssn:observedProperty
 		if (conf.get("ssn:observedProperty") != null) {
-			// e.g. http://example.org/obs/0001 ssn:observedProperty sweet:AirTemperature
+			String observedProperty;
+			if (!((String)conf.get("ssn:observedProperty")).startsWith("http://")) {
+				// http://example.org/observedProperty/vehiclePosition
+				observedProperty = namespace + "/observedProperty/" + (String)conf.get("ssn:observedProperty");
+			}
+			else {
+				// e.g. https://sweet.jpl.nasa.gov#AirTemperature
+				observedProperty = (String)conf.get("ssn:observedProperty");
+			}
 			graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId), 
-				ResourceFactory.createProperty(NS_SSN, "observedProperty"), 
-				ResourceFactory.createResource(tuple.getStringByField((String)conf.get("ssn:observedProperty")))).asTriple());
+				ResourceFactory.createProperty(SSNMapping.NS_SSN, "observedProperty"), 
+				ResourceFactory.createResource(observedProperty)).asTriple());
 		}
 		else {
 			log.error("Incomplete observation metadata - ssn:observedProperty missing!");
@@ -114,12 +99,12 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 		if (conf.get("ssn:hasDataValue") != null) {
 			// e.g. http://example.org/obs/0001 ssn:observationResult http://example.org/obs/0001/output
 			graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId), 
-				ResourceFactory.createProperty(NS_SSN, "observationResult"), 
+				ResourceFactory.createProperty(SSNMapping.NS_SSN, "observationResult"), 
 				ResourceFactory.createResource(observationId + "/output")).asTriple());
 			// e.g. http://example.org/obs/0001/output ssn:hasValue "17.8"
 			// TODO: infer the type of value to add a typed literal, e.g. xsd:float, instead of a plain literal
 			graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId + "/output"), 
-				ResourceFactory.createProperty(NS_SSN, "hasValue"), 
+				ResourceFactory.createProperty(SSNMapping.NS_SSN, "hasValue"), 
 				ResourceFactory.createPlainLiteral(tuple.getStringByField((String)conf.get("ssn:hasDataValue")))).asTriple());
 			// TODO: unit of measurement, e.g. qudt
 		}
@@ -132,20 +117,20 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 		if (conf.get("ssn:observationSamplingTime") != null) {
 			// e.g. http://example.org/obs/0001 ssn:observationSamplingTime "2002-05-30T09:30:10+02:00"^^xsd:dateTime
 			graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId), 
-				ResourceFactory.createProperty(NS_SSN, "observationSamplingTime"), 
+				ResourceFactory.createProperty(SSNMapping.NS_SSN, "observationSamplingTime"), 
 				ResourceFactory.createTypedLiteral(tuple.getStringByField((String)conf.get("ssn:observationSamplingTime")), XSDDatatype.XSDdateTime)).asTriple());
 		}
 		else if (conf.get("ssn:observationResultTime") != null) {
 			// e.g. http://example.org/obs/0001 ssn:observationResultTime "2002-05-30T09:30:10+02:00"^^xsd:dateTime
 			graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId), 
-				ResourceFactory.createProperty(NS_SSN, "observationResultTime"), 
+				ResourceFactory.createProperty(SSNMapping.NS_SSN, "observationResultTime"), 
 				ResourceFactory.createTypedLiteral(tuple.getStringByField((String)conf.get("ssn:observationResultTime")), XSDDatatype.XSDdateTime)).asTriple());
 		}
 		else {
 			// If no timestamp is included in the observations, we add the system time.
 			// e.g. http://example.org/obs/0001 ssn:observationResultTime "2002-05-30T09:30:10+02:00"^^xsd:dateTime
 			graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId), 
-				ResourceFactory.createProperty(NS_SSN, "observationResultTime"), 
+				ResourceFactory.createProperty(SSNMapping.NS_SSN, "observationResultTime"), 
 				ResourceFactory.createTypedLiteral(new DateFormatManager(Locale.getDefault(), "YYYY-DD-MMThh:mm:ssZ").format(new Date(System.currentTimeMillis())), 
 						XSDDatatype.XSDdateTime)).asTriple());
 		}
@@ -161,14 +146,21 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 				sensorId = (String)conf.get("ssn:observedBy");
 			}
 			graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId), 
-				ResourceFactory.createProperty(NS_SSN, "observedBy"), 
+				ResourceFactory.createProperty(SSNMapping.NS_SSN, "observedBy"), 
 				ResourceFactory.createResource(sensorId)).asTriple());
 		} // No error message is added here because we do not consider the sensor metadata mandatory
 		
 		// geosparql:asWKT
 		// We assume that the spatial location is a point given by two coordinates x and y in a String, i.e. "x y"
 		// TODO: add support for lines and polygons.
+		String latLon = null;
 		if (conf.get("geosparql:asWKT") != null) {
+			latLon = (String)conf.get("geosparql:asWKT");
+		}
+		else if ((conf.get("lat") != null) && (conf.get("lon") != null)) {
+			latLon = conf.get("lat") + " " + conf.get("lon");
+		}
+		if (latLon != null) {
 			String crs = (String)conf.get("crs");
 			if (crs == null) {
 				// If no crs is provided, we assume that the data follows the global default EPSG:4326.
@@ -177,18 +169,19 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 			String geom = namespace + "/geom/" + tuple.hashCode();
 			// e.g. http://example.org/obs/0001 geosparql:hasGeometry http://example.org/geom/0002
 			graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId), 
-				ResourceFactory.createProperty(NS_GEOSPARQL, "hasGeometry"), 
+				ResourceFactory.createProperty(SSNMapping.NS_GEOSPARQL, "hasGeometry"), 
 				ResourceFactory.createResource(geom)).asTriple());
 			// e.g. http://example.org/geom/0002 geosparql:asWKT "<http://www.opengis.net/def/crs/EPSG/0/4258> POINT(27.7488 -18.0678)"^^geosparql:wktLiteral
 			graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(geom), 
-				ResourceFactory.createProperty(NS_GEOSPARQL, "asWKT"), 
-				ResourceFactory.createPlainLiteral("<" + crs + "> POINT(" + (String)conf.get("geosparql:asWKT") + ")")).asTriple());
+				ResourceFactory.createProperty(SSNMapping.NS_GEOSPARQL, "asWKT"), 
+				ResourceFactory.createPlainLiteral("<" + crs + "> POINT(" + latLon + ")")).asTriple());
 			// TODO: create a wktLiteral instead of a plain literal. Problem: wktLiteral is not a RDFDataType.
 		} // No error message is added here because we do not consider the sensor metadata mandatory
 		
+		
 		// ssn:featureOfInterest
 		if (conf.get("ssn:featureOfInterest") != null) {
-			String foi;
+			String foi = null;
 			if (((String)conf.get("ssn:featureOfInterest")).startsWith("http://")) {
 				foi = namespace + "/foi/" + tuple.hashCode();
 			}
@@ -197,7 +190,7 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 			}
 			// e.g. http://example.org/obs/0001 ssn:featureOfInterest http://example.org/foi/0235
 			graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId), 
-				ResourceFactory.createProperty(NS_SSN, "featureOfInterest"), 
+				ResourceFactory.createProperty(SSNMapping.NS_SSN, "featureOfInterest"), 
 				ResourceFactory.createResource(foi)).asTriple());
 		} // No error message is added here because we do not consider the sensor metadata mandatory
 		
