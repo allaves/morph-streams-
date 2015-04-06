@@ -31,7 +31,7 @@ import backtype.storm.utils.Utils;
 
 public class TestCSVToSSNGraphBolt {
 	
-	private Logger log = Logger.getLogger(this.getClass());
+	//private Logger log = Logger.getLogger(this.getClass());
 
 	@Before
 	public void setUp() throws Exception {
@@ -48,40 +48,39 @@ public class TestCSVToSSNGraphBolt {
 		String spoutId = "kafkaSpout";
 		// Kafka spout configuration
 		SpoutConfig spoutConfig = new SpoutConfig(host, topic, zkRoot, spoutId);
-		spoutConfig.stateUpdateIntervalMs = 2000;
+		//spoutConfig.stateUpdateIntervalMs = 2000;
 		builder.setSpout("kafkaSpout", new KafkaSpout(spoutConfig));
 		String namespace = "http://morph-streams-plus-plus/test";
 		CSVToSSNGraphBolt csvToSSNBolt = new CSVToSSNGraphBolt(namespace);
 		builder.setBolt("csvToSSN", csvToSSNBolt).shuffleGrouping("kafkaSpout");
 		builder.setBolt("printer", new AckerPrinterBolt()).shuffleGrouping("csvToSSN");
-		
-		// Topology general configuration
-		Config config = new Config();
-		//config.setMessageTimeoutSecs(5);
-		
-		// SSN mapping configuration
-		Map<String, String> ssnConfig = new HashMap<String, String>();
-				
+			
 		// The name of the CSV fields has to be submitted when the stream is registered in the system
 		String[] fieldNames = {"vehicleId", "route", "lat", "lon", "bearing", "direction", "previousStop", "currentStop", "departure"};
 		// Same happens with the dataType fields
 		XSDDatatype[] fieldDataTypes = {XSDDatatype.XSDstring, XSDDatatype.XSDstring, XSDDatatype.XSDfloat, XSDDatatype.XSDfloat,
 				XSDDatatype.XSDint, XSDDatatype.XSDstring, XSDDatatype.XSDstring, XSDDatatype.XSDstring, XSDDatatype.XSDstring};
 		
-		HashMap<String, String> ssnMapping = new HashMap<String, String>();
+		// Topology general configuration
+		Config config = new Config();
+		config.setMessageTimeoutSecs(5);
+		
+		// SSN mapping configuration
+		Map<String, String> ssnConfig = new HashMap<String, String>();
+		
 		// TODO: What happens when there is no observed property in the CSV? -> It should be submitted when the stream is registered in the system
 		ssnConfig.put(SSNMapping.MAPPING_OBSERVED_PROPERTY, "vehicleDeparture");
 		ssnConfig.put(SSNMapping.MAPPING_DATA_VALUE, "departure");
 		ssnConfig.put(SSNMapping.MAPPING_LATITUDE, "lat");
 		ssnConfig.put(SSNMapping.MAPPING_LONGITUDE, "lon");
 		ssnConfig.put(SSNMapping.MAPPING_FEATURE_OF_INTEREST, "vehicleId");
-		config.setEnvironment(ssnMapping);
+		config.setEnvironment(ssnConfig);
 		
 		LocalCluster cluster = new LocalCluster();
 		cluster.submitTopology("hsl-test", config, builder.createTopology());
 		
 		StreamHandler.getInstance().registerCSVStream("http://83.145.232.209:10001/?type=vehicles&lng1=23&lat1=60&lng2=26&lat2=61", 
-				3000, FORMAT.CSV_DOCUMENT, "test", ';', fieldNames, fieldDataTypes, ssnMapping);
+				3000, FORMAT.CSV_DOCUMENT, "test", ';', fieldNames, fieldDataTypes, ssnConfig);
 		
 		Utils.sleep(30000);
 	    cluster.shutdown();

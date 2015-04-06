@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -118,7 +119,7 @@ public class StreamHandler {
 	 * Registers a stream (if it was not in the registry) and starts publishing data to Kafka
 	 */
 	public String registerCSVStream(String url, int millisecondsRate, FORMAT format, String topic, char delimiter, 
-			String[] fieldNames, XSDDatatype[] fieldDataTypes, HashMap<String, String> ssnMapping) {
+			String[] fieldNames, XSDDatatype[] fieldDataTypes, Map<String, String> ssnMapping) {
 		Stream stream;
 		try {
 			stream = new CSVStream(new URL(url), millisecondsRate, format, topic, delimiter, fieldNames, fieldDataTypes, ssnMapping);

@@ -61,7 +61,7 @@ public class StreamPublisher implements Runnable {
 						record = new ProducerRecord<String, Object>(stream.getTopic(), line);
 						// Sends message to Kafka
 						StreamHandler.getInstance().getKafkaProducer().send(record);
-						log.info("Message sent!");
+						System.out.println("INFO: Message sent!");
 					}
 				}
 				else if (stream.getFormat().equalsIgnoreCase(FORMAT.CSV_LINE.toString())) {
@@ -81,7 +81,7 @@ public class StreamPublisher implements Runnable {
 				
 				
 				// Closes the BufferedReader
-				br.close();
+				//br.close();
 			}
 			
 			

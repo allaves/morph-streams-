@@ -3,6 +3,7 @@ package es.upm.fi.oeg.stream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 
@@ -11,10 +12,10 @@ public class CSVStream extends Stream {
 	private char delimiter;
 	private String[] fieldNames;
 	private XSDDatatype[] fieldDataTypes;
-	private HashMap<String, String> ssnMapping;
+	private Map<String, String> ssnMapping;
 	
 	public CSVStream(URL url, int millisecondsRate, FORMAT format,	String topic, char delimiter, 
-			String[] fieldNames, XSDDatatype[] fieldDataTypes, HashMap<String, String> ssnMapping) {
+			String[] fieldNames, XSDDatatype[] fieldDataTypes, Map<String, String> ssnMapping) {
 		super(url, millisecondsRate, format, topic);
 		this.delimiter = delimiter;
 		this.fieldNames = fieldNames;
@@ -34,7 +35,7 @@ public class CSVStream extends Stream {
 		return fieldDataTypes;
 	}
 
-	public HashMap<String, String> getSsnMapping() {
+	public Map<String, String> getSsnMapping() {
 		return ssnMapping;
 	}
 

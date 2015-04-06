@@ -34,10 +34,11 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 	
 	private static final long serialVersionUID = 8325660643098345088L;
 	
-	private Logger log = Logger.getLogger(this.getClass());
+	//private Logger log = Logger.getLogger(this.getClass());
 	private OutputCollector collector;
 	private String namespace;
 	private Map conf;
+	private Graph graph;
 	
 	
 	/*
@@ -57,12 +58,12 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 	public void prepare(Map conf, TopologyContext context, OutputCollector collector) {
 		this.collector = collector;
 		this.conf = conf;
+		this.graph = Factory.createDefaultGraph();
 	}
 	
 	
 	@Override
 	public void execute(Tuple tuple) {
-		Graph graph = Factory.createDefaultGraph();
 		// ssn:Observation
 		String observationId = namespace + "/obs/";
 		if (conf.get("observationId") != null) {
@@ -92,7 +93,7 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 				ResourceFactory.createResource(observedProperty)).asTriple());
 		}
 		else {
-			log.error("Incomplete observation metadata - ssn:observedProperty missing!");
+			System.out.println("ERROR: Incomplete observation metadata - ssn:observedProperty missing!");
 		}
 		
 		// ssn:hasDataValue
@@ -109,7 +110,7 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 			// TODO: unit of measurement, e.g. qudt
 		}
 		else {
-			log.error("Incomplete observation metadata - ssn:hasDataValue missing!");
+			System.out.println("ERROR: Incomplete observation metadata - ssn:hasDataValue missing!");
 		}
 		
 		// ssn:observationSamplingTime OR ssn:observationResultTime
@@ -119,20 +120,22 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 			graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId), 
 				ResourceFactory.createProperty(SSNMapping.NS_SSN, "observationSamplingTime"), 
 				ResourceFactory.createTypedLiteral(tuple.getStringByField((String)conf.get("ssn:observationSamplingTime")), XSDDatatype.XSDdateTime)).asTriple());
+				//ResourceFactory.createPlainLiteral(tuple.getStringByField((String)conf.get("ssn:observationSamplingTime")))).asTriple());
 		}
 		else if (conf.get("ssn:observationResultTime") != null) {
 			// e.g. http://example.org/obs/0001 ssn:observationResultTime "2002-05-30T09:30:10+02:00"^^xsd:dateTime
 			graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId), 
 				ResourceFactory.createProperty(SSNMapping.NS_SSN, "observationResultTime"), 
 				ResourceFactory.createTypedLiteral(tuple.getStringByField((String)conf.get("ssn:observationResultTime")), XSDDatatype.XSDdateTime)).asTriple());
+				//ResourceFactory.createPlainLiteral(tuple.getStringByField((String)conf.get("ssn:observationResultTime")))).asTriple());
 		}
 		else {
 			// If no timestamp is included in the observations, we add the system time.
 			// e.g. http://example.org/obs/0001 ssn:observationResultTime "2002-05-30T09:30:10+02:00"^^xsd:dateTime
 			graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId), 
 				ResourceFactory.createProperty(SSNMapping.NS_SSN, "observationResultTime"), 
-				ResourceFactory.createTypedLiteral(new DateFormatManager(Locale.getDefault(), "YYYY-DD-MMThh:mm:ssZ").format(new Date(System.currentTimeMillis())), 
-						XSDDatatype.XSDdateTime)).asTriple());
+				ResourceFactory.createTypedLiteral(new DateFormatManager(Locale.getDefault(), "YYYY-DD-MMThh:mm:ssZ").format(new Date(System.currentTimeMillis())), XSDDatatype.XSDdateTime)).asTriple());
+				//ResourceFactory.createPlainLiteral(new DateFormatManager(Locale.getDefault(), "YYYY-DD-MMThh:mm:ssZ").format(new Date(System.currentTimeMillis())))).asTriple());
 		}
 		
 		// ssn:observedBy
@@ -195,6 +198,7 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 		} // No error message is added here because we do not consider the sensor metadata mandatory
 		
 		collector.emit(new Values(observationId, System.currentTimeMillis(), graph));
+		collector.ack(tuple);
 	}
 
 
