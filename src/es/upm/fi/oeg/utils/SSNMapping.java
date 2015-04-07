@@ -14,6 +14,8 @@ public class SSNMapping {
 	public final static String MAPPING_LONGITUDE = "lon";
 	public final static String MAPPING_CRS = "crs";
 	
+	public final static String OBSERVED_PROPERTY = "property";
+	
 	public final static String NS_SSN = "http://purl.oclc.org/NET/ssnx/ssn#";
 	public final static String NS_GEOSPARQL = "http://www.opengis.net/ont/geosparql#";
 	public final static String NS_RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";

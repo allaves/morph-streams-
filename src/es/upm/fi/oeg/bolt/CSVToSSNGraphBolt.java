@@ -66,8 +66,8 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 	public void execute(Tuple tuple) {
 		// ssn:Observation
 		String observationId = namespace + "/obs/";
-		if (conf.get("observationId") != null) {
-			observationId += tuple.getStringByField((String)conf.get("observationId"));
+		if (conf.get(SSNMapping.MAPPING_OBSERVATION_ID) != null) {
+			observationId += tuple.getStringByField((String)conf.get(SSNMapping.MAPPING_OBSERVATION_ID));
 		}
 		else {
 			observationId += tuple.hashCode();
@@ -78,26 +78,30 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 			ResourceFactory.createResource(SSNMapping.NS_SSN + "Observation")).asTriple());
 		
 		// ssn:observedProperty
-		if (conf.get("ssn:observedProperty") != null) {
-			String observedProperty;
-			if (!((String)conf.get("ssn:observedProperty")).startsWith("http://")) {
+		String observedProperty = null;
+		if (conf.get(SSNMapping.OBSERVED_PROPERTY) != null) {
+			if (!((String)conf.get(SSNMapping.MAPPING_OBSERVED_PROPERTY)).startsWith("http://")) {
 				// http://example.org/observedProperty/vehiclePosition
-				observedProperty = namespace + "/observedProperty/" + (String)conf.get("ssn:observedProperty");
+				observedProperty = namespace + "/observedProperty/" + (String)conf.get(SSNMapping.MAPPING_OBSERVED_PROPERTY);
 			}
 			else {
-				// e.g. https://sweet.jpl.nasa.gov#AirTemperature
-				observedProperty = (String)conf.get("ssn:observedProperty");
+				observedProperty = (String)conf.get(SSNMapping.MAPPING_OBSERVED_PROPERTY);
 			}
+		}
+		else if (conf.get(SSNMapping.OBSERVED_PROPERTY) != null) {
+			observedProperty = tuple.getStringByField((String)conf.get(SSNMapping.OBSERVED_PROPERTY));
+		}
+		if (observedProperty != null) {
 			graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId), 
-				ResourceFactory.createProperty(SSNMapping.NS_SSN, "observedProperty"), 
-				ResourceFactory.createResource(observedProperty)).asTriple());
+					ResourceFactory.createProperty(SSNMapping.NS_SSN, "observedProperty"), 
+					ResourceFactory.createResource(observedProperty)).asTriple());
 		}
 		else {
-			System.out.println("ERROR: Incomplete observation metadata - ssn:observedProperty missing!");
+			System.out.println("ERROR: Incomplete observation metadata - ssn:observedProperty missing! - " + tuple);
 		}
 		
 		// ssn:hasDataValue
-		if (conf.get("ssn:hasDataValue") != null) {
+		if (conf.get(SSNMapping.MAPPING_DATA_VALUE) != null) {
 			// e.g. http://example.org/obs/0001 ssn:observationResult http://example.org/obs/0001/output
 			graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId), 
 				ResourceFactory.createProperty(SSNMapping.NS_SSN, "observationResult"), 
@@ -106,11 +110,11 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 			// TODO: infer the type of value to add a typed literal, e.g. xsd:float, instead of a plain literal
 			graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId + "/output"), 
 				ResourceFactory.createProperty(SSNMapping.NS_SSN, "hasValue"), 
-				ResourceFactory.createPlainLiteral(tuple.getStringByField((String)conf.get("ssn:hasDataValue")))).asTriple());
+				ResourceFactory.createPlainLiteral(tuple.getStringByField((String)conf.get(SSNMapping.MAPPING_DATA_VALUE)))).asTriple());
 			// TODO: unit of measurement, e.g. qudt
 		}
 		else {
-			System.out.println("ERROR: Incomplete observation metadata - ssn:hasDataValue missing!");
+			System.out.println("ERROR: Incomplete observation metadata - ssn:hasDataValue missing! - " + tuple);
 		}
 		
 		// ssn:observationSamplingTime OR ssn:observationResultTime
@@ -120,14 +124,12 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 			graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId), 
 				ResourceFactory.createProperty(SSNMapping.NS_SSN, "observationSamplingTime"), 
 				ResourceFactory.createTypedLiteral(tuple.getStringByField((String)conf.get("ssn:observationSamplingTime")), XSDDatatype.XSDdateTime)).asTriple());
-				//ResourceFactory.createPlainLiteral(tuple.getStringByField((String)conf.get("ssn:observationSamplingTime")))).asTriple());
 		}
 		else if (conf.get("ssn:observationResultTime") != null) {
 			// e.g. http://example.org/obs/0001 ssn:observationResultTime "2002-05-30T09:30:10+02:00"^^xsd:dateTime
 			graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId), 
 				ResourceFactory.createProperty(SSNMapping.NS_SSN, "observationResultTime"), 
 				ResourceFactory.createTypedLiteral(tuple.getStringByField((String)conf.get("ssn:observationResultTime")), XSDDatatype.XSDdateTime)).asTriple());
-				//ResourceFactory.createPlainLiteral(tuple.getStringByField((String)conf.get("ssn:observationResultTime")))).asTriple());
 		}
 		else {
 			// If no timestamp is included in the observations, we add the system time.
@@ -135,7 +137,6 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 			graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId), 
 				ResourceFactory.createProperty(SSNMapping.NS_SSN, "observationResultTime"), 
 				ResourceFactory.createTypedLiteral(new DateFormatManager(Locale.getDefault(), "YYYY-DD-MMThh:mm:ssZ").format(new Date(System.currentTimeMillis())), XSDDatatype.XSDdateTime)).asTriple());
-				//ResourceFactory.createPlainLiteral(new DateFormatManager(Locale.getDefault(), "YYYY-DD-MMThh:mm:ssZ").format(new Date(System.currentTimeMillis())))).asTriple());
 		}
 		
 		// ssn:observedBy
@@ -183,7 +184,7 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 		
 		
 		// ssn:featureOfInterest
-		if (conf.get("ssn:featureOfInterest") != null) {
+		if (conf.get(SSNMapping.MAPPING_FEATURE_OF_INTEREST) != null) {
 			String foi = null;
 			if (((String)conf.get("ssn:featureOfInterest")).startsWith("http://")) {
 				foi = namespace + "/foi/" + tuple.hashCode();

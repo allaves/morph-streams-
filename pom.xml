@@ -57,6 +57,20 @@
 	    <groupId>com.google.guava</groupId>
 	    <artifactId>guava</artifactId>
 	    <version>17.0</version>
+	    <exclusions>
+		  <exclusion> 
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-log4j12</artifactId>
+		  </exclusion>
+		  <exclusion> 
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-api</artifactId>
+		  </exclusion>
+	  	  <exclusion> 
+		    <groupId>log4j</groupId>
+		    <artifactId>log4j</artifactId>
+		  </exclusion>
+		</exclusions>
 	</dependency>
 	<dependency>
 	    <groupId>org.apache.jena</groupId>
@@ -100,11 +114,39 @@
   		<groupId>es.upm.fi.oeg.morph</groupId>
   		<artifactId>morph-streams</artifactId>
   		<version>1.0.6</version>
+  		<exclusions>
+		  <exclusion> 
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-log4j12</artifactId>
+		  </exclusion>
+		  <exclusion> 
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-api</artifactId>
+		  </exclusion>
+	  	  <exclusion> 
+		    <groupId>log4j</groupId>
+		    <artifactId>log4j</artifactId>
+		  </exclusion>
+		</exclusions>
   	</dependency>
   	<dependency>
   		<groupId>es.upm.fi.oeg.morph</groupId>
   		<artifactId>sparql-stream</artifactId>
   		<version>1.0.4</version>
+  		<exclusions>
+		  <exclusion> 
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-log4j12</artifactId>
+		  </exclusion>
+		  <exclusion> 
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-api</artifactId>
+		  </exclusion>
+	  	  <exclusion> 
+		    <groupId>log4j</groupId>
+		    <artifactId>log4j</artifactId>
+		  </exclusion>
+		</exclusions>
   	</dependency>
   	<dependency>
   		<groupId>es.upm.fi.oeg.morph</groupId>
@@ -129,6 +171,20 @@
   		<groupId>com.sun.jersey</groupId>
   		<artifactId>jersey-client</artifactId>
   		<version>1.19</version>
+  		<exclusions>
+		  <exclusion> 
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-log4j12</artifactId>
+		  </exclusion>
+		  <exclusion> 
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-api</artifactId>
+		  </exclusion>
+	  	  <exclusion> 
+		    <groupId>log4j</groupId>
+		    <artifactId>log4j</artifactId>
+		  </exclusion>
+		</exclusions>
   	</dependency>
   </dependencies>
   <packaging>war</packaging>

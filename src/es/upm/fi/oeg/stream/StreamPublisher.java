@@ -81,7 +81,7 @@ public class StreamPublisher implements Runnable {
 				
 				
 				// Closes the BufferedReader
-				//br.close();
+				br.close();
 			}
 			
 			

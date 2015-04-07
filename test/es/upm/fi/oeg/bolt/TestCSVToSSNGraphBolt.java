@@ -41,14 +41,15 @@ public class TestCSVToSSNGraphBolt {
 	public void test() {
 		TopologyBuilder builder = new TopologyBuilder();
 		// Documentation related to KafkaSpout at https://github.com/apache/storm/tree/master/external/storm-kafka
-		BrokerHosts host = new ZkHosts("localhost:2181");
+		BrokerHosts host = new ZkHosts("127.0.0.1:2181");
 		String topic = "test";
 		// The zkRoot is where Storm keeps metadata about what is consumed, i.e. localhost:2181/kafkastorm
 		String zkRoot = "/kafkastorm/" + topic;
 		String spoutId = "kafkaSpout";
 		// Kafka spout configuration
 		SpoutConfig spoutConfig = new SpoutConfig(host, topic, zkRoot, spoutId);
-		//spoutConfig.stateUpdateIntervalMs = 2000;
+		spoutConfig.stateUpdateIntervalMs = 10000;
+		spoutConfig.socketTimeoutMs = 10000;
 		builder.setSpout("kafkaSpout", new KafkaSpout(spoutConfig));
 		String namespace = "http://morph-streams-plus-plus/test";
 		CSVToSSNGraphBolt csvToSSNBolt = new CSVToSSNGraphBolt(namespace);
@@ -63,13 +64,13 @@ public class TestCSVToSSNGraphBolt {
 		
 		// Topology general configuration
 		Config config = new Config();
-		config.setMessageTimeoutSecs(5);
+		config.setMessageTimeoutSecs(10);
 		
 		// SSN mapping configuration
 		Map<String, String> ssnConfig = new HashMap<String, String>();
 		
 		// TODO: What happens when there is no observed property in the CSV? -> It should be submitted when the stream is registered in the system
-		ssnConfig.put(SSNMapping.MAPPING_OBSERVED_PROPERTY, "vehicleDeparture");
+		ssnConfig.put(SSNMapping.OBSERVED_PROPERTY, "http://example.org/observedProperty/vehicleDeparture");
 		ssnConfig.put(SSNMapping.MAPPING_DATA_VALUE, "departure");
 		ssnConfig.put(SSNMapping.MAPPING_LATITUDE, "lat");
 		ssnConfig.put(SSNMapping.MAPPING_LONGITUDE, "lon");
@@ -79,8 +80,9 @@ public class TestCSVToSSNGraphBolt {
 		LocalCluster cluster = new LocalCluster();
 		cluster.submitTopology("hsl-test", config, builder.createTopology());
 		
-		StreamHandler.getInstance().registerCSVStream("http://83.145.232.209:10001/?type=vehicles&lng1=23&lat1=60&lng2=26&lat2=61", 
-				3000, FORMAT.CSV_DOCUMENT, "test", ';', fieldNames, fieldDataTypes, ssnConfig);
+		//StreamHandler.getInstance().registerCSVStream("http://83.145.232.209:10001/?type=vehicles&lng1=23&lat1=60&lng2=26&lat2=61",
+		StreamHandler.getInstance().registerCSVStream("http://83.145.232.209:10001/?type=vehicle&id=RHKL00074",
+				3000, FORMAT.CSV_LINE, "test", ';', fieldNames, fieldDataTypes, ssnConfig);
 		
 		Utils.sleep(30000);
 	    cluster.shutdown();
