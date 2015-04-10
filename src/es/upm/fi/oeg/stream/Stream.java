@@ -16,6 +16,9 @@ public class Stream {
 	private String user;
 	private String password;
 	
+	// In case of having a RabbitMQ data source
+	private String rabbitMQExchange;
+	
 	
 	public enum FORMAT {
 		CSV_LINE, CSV_DOCUMENT, RDF, JSON
@@ -38,6 +41,17 @@ public class Stream {
 		this.user = user;
 		this.password = password;
 		this.urlLogin = urlLogin;
+	}
+	
+	public Stream(URL url, int millisecondsRate, FORMAT format, String topic, String user, String password, String rabbitMQExchange) {
+		this.id = url + "--" + Integer.toString(millisecondsRate);
+		this.url = url;
+		this.millisecondsRate = millisecondsRate;
+		this.format = format.toString();
+		this.topic = topic;
+		this.user = user;
+		this.password = password;
+		this.rabbitMQExchange = rabbitMQExchange;
 	}
 
 	public String getId() {
@@ -70,5 +84,9 @@ public class Stream {
 	
 	public URL getUrlLogin() {
 		return urlLogin;
+	}
+	
+	public String getRabbitMQExchange() {
+		return rabbitMQExchange;
 	}
 }

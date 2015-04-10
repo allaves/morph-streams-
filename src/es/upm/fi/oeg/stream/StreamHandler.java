@@ -1,5 +1,6 @@
 package es.upm.fi.oeg.stream;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -17,6 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 
 import es.upm.fi.oeg.stream.Stream.FORMAT;
 
@@ -118,11 +122,11 @@ public class StreamHandler {
 	/*
 	 * Registers a stream (if it was not in the registry) and starts publishing data to Kafka
 	 */
-	public String registerCSVStream(String url, int millisecondsRate, FORMAT format, String topic, char delimiter, 
+	public String registerCSVStream(String url, int millisecondsRate, FORMAT format, String kafkaTopic, char delimiter, 
 			String[] fieldNames, XSDDatatype[] fieldDataTypes, Map<String, String> ssnMapping) {
-		Stream stream;
+		Stream stream = null;
 		try {
-			stream = new CSVStream(new URL(url), millisecondsRate, format, topic, delimiter, fieldNames, fieldDataTypes, ssnMapping);
+			stream = new CSVStream(new URL(url), millisecondsRate, format, kafkaTopic, delimiter, fieldNames, fieldDataTypes, ssnMapping);
 		} catch (MalformedURLException e) {
 			log.error(e.getMessage());
 			return null;
@@ -133,14 +137,33 @@ public class StreamHandler {
 		return null;
 	}
 	
+	
 	/*
-	 * Registers a stream (if it was not in the registry) and starts publishing data to Kafka
+	 * Registers a stream that requires form-based login (if it was not in the registry) and starts publishing data to Kafka
 	 */
-	public String registerStreamWithFormBasedLogin(String url, int millisecondsRate, FORMAT format, String topic, 
+	public String registerStreamWithFormBasedLogin(String url, int millisecondsRate, FORMAT format, String kafkaTopic, 
 			String user, String password, String urlLogin) {
-		Stream stream;
+		Stream stream = null;
 		try {
-			stream = new Stream(new URL(url), millisecondsRate, format, topic, user, password, new URL(urlLogin));
+			stream = new Stream(new URL(url), millisecondsRate, format, kafkaTopic, user, password, new URL(urlLogin));
+		} catch (MalformedURLException e) {
+			log.error(e.getMessage());
+			return null;
+		}
+		if (registerStream(stream)) {
+			return stream.getId();
+		}
+		return null;
+	}
+	
+	
+	/*
+	 * Registers a stream from RabbitMQ (if it was not in the registry) and starts publishing data to Kafka
+	 */
+	public String registerStreamRabbitMQ(String url, int millisecondsRate, FORMAT format, String kafkaTopic, String user, String password, String rabbitMQExchange) {
+		Stream stream = null;
+		try {
+			stream = new Stream(new URL(url), millisecondsRate, format, kafkaTopic, user, password, rabbitMQExchange);
 		} catch (MalformedURLException e) {
 			log.error(e.getMessage());
 			return null;

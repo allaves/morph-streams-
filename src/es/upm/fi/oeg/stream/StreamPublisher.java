@@ -8,6 +8,11 @@ import java.net.URLConnection;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
 
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.DefaultConsumer;
+
 import es.upm.fi.oeg.stream.Stream.FORMAT;
 import es.upm.fi.oeg.utils.FormBasedAuthentication;
 
@@ -20,6 +25,8 @@ public class StreamPublisher implements Runnable {
 	
 	private Stream stream;
 	private FormBasedAuthentication auth;
+	// RabbitMQ fields
+	
 
 	public StreamPublisher(Stream stream) {
 		this.stream = stream;
@@ -30,7 +37,7 @@ public class StreamPublisher implements Runnable {
 		try {
 			String message = null;
 			ProducerRecord<String, Object> record = null;
-			// If the stream has authentication credentials
+			// If the stream has form-based authentication credentials
 			if (stream.getUser() != null) {
 				// Form-based login - If the client is not authenticated
 				if (auth == null) {
@@ -47,10 +54,19 @@ public class StreamPublisher implements Runnable {
 				// Sends message to Kafka
 				StreamHandler.getInstance().getKafkaProducer().send(record);
 			}
-			// If the stream does not have authentication credentials
+			// If the stream comes from RabbitMQ
+			else if (stream.getRabbitMQExchange() != null) {
+				ConnectionFactory factory = new ConnectionFactory();
+				factory.setHost(stream.getUrl().toString());
+				Connection connection = factory.newConnection();
+				Channel channel = connection.createChannel();
+				channel.basicConsume(stream.getRabbitMQExchange(), new DefaultConsumer(channel) {
+					// TODO: test basic consumer
+				});
+			}
+			// DEFAULT: if the data comes from an API
 			else {
-				// No need for authentication
-				// Get data from the source
+				// Get data from the source API
 				URLConnection connection = stream.getUrl().openConnection();
 				BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 				String line = null;
