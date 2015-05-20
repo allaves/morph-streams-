@@ -50,17 +50,17 @@ public class StreamPublisher implements Runnable {
 				// TODO: support other authentication methods, e.g. Basic.
 //				else if (!message.contains("j_username")) {					
 //				}
-				record = new ProducerRecord<String, Object>(stream.getTopic(), message);
+				record = new ProducerRecord<String, Object>(stream.getKafkaTopic(), message);
 				// Sends message to Kafka
 				StreamHandler.getInstance().getKafkaProducer().send(record);
 			}
 			// If the stream comes from RabbitMQ
-			else if (stream.getRabbitMQExchange() != null) {
+			else if (stream.getRabbitMQQueue() != null) {
 				ConnectionFactory factory = new ConnectionFactory();
 				factory.setHost(stream.getUrl().toString());
 				Connection connection = factory.newConnection();
 				Channel channel = connection.createChannel();
-				channel.basicConsume(stream.getRabbitMQExchange(), new DefaultConsumer(channel) {
+				channel.basicConsume(stream.getRabbitMQQueue(), new DefaultConsumer(channel) {
 					// TODO: test basic consumer
 				});
 			}
@@ -74,7 +74,7 @@ public class StreamPublisher implements Runnable {
 				if (stream.getFormat().equalsIgnoreCase(FORMAT.CSV_DOCUMENT.toString())) {
 					while ((line = br.readLine()) != null) {
 						// Creates a Kafka record
-						record = new ProducerRecord<String, Object>(stream.getTopic(), line);
+						record = new ProducerRecord<String, Object>(stream.getKafkaTopic(), line);
 						// Sends message to Kafka
 						StreamHandler.getInstance().getKafkaProducer().send(record);
 						System.out.println("INFO: Message sent!");
@@ -84,7 +84,7 @@ public class StreamPublisher implements Runnable {
 					line = br.readLine();
 					message = line;
 					
-					record = new ProducerRecord<String, Object>(stream.getTopic(), message);
+					record = new ProducerRecord<String, Object>(stream.getKafkaTopic(), message);
 					// Sends message to Kafka
 					StreamHandler.getInstance().getKafkaProducer().send(record);
 				}

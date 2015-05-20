@@ -10,48 +10,48 @@ public class Stream {
 	private URL urlLogin;
 	private long millisecondsRate;
 	private String format;
-	private String topic;
+	private String kafkaTopic;
 	
 	// In case of having an API with authentication
 	private String user;
 	private String password;
 	
 	// In case of having a RabbitMQ data source
-	private String rabbitMQExchange;
+	private String rabbitMQQueue;
 	
 	
 	public enum FORMAT {
 		CSV_LINE, CSV_DOCUMENT, RDF, JSON
 	}
 	
-	public Stream(URL url, int millisecondsRate, FORMAT format, String topic) {
+	public Stream(URL url, int millisecondsRate, FORMAT format, String kafkaTopic) {
 		this.id = url + "--" + Integer.toString(millisecondsRate);
 		this.url = url;
 		this.millisecondsRate = millisecondsRate;
 		this.format = format.toString();
-		this.topic = topic;
+		this.kafkaTopic = kafkaTopic;
 	}
 	
-	public Stream(URL url, int millisecondsRate, FORMAT format, String topic, String user, String password, URL urlLogin) {
+	public Stream(URL url, int millisecondsRate, FORMAT format, String kafkaTopic, String user, String password, URL urlLogin) {
 		this.id = url + "--" + Integer.toString(millisecondsRate);
 		this.url = url;
 		this.millisecondsRate = millisecondsRate;
 		this.format = format.toString();
-		this.topic = topic;
+		this.kafkaTopic = kafkaTopic;
 		this.user = user;
 		this.password = password;
 		this.urlLogin = urlLogin;
 	}
 	
-	public Stream(URL url, int millisecondsRate, FORMAT format, String topic, String user, String password, String rabbitMQExchange) {
+	public Stream(URL url, int millisecondsRate, FORMAT format, String kafkaTopic, String user, String password, String rabbitMQQueue) {
 		this.id = url + "--" + Integer.toString(millisecondsRate);
 		this.url = url;
 		this.millisecondsRate = millisecondsRate;
 		this.format = format.toString();
-		this.topic = topic;
+		this.kafkaTopic = kafkaTopic;
 		this.user = user;
 		this.password = password;
-		this.rabbitMQExchange = rabbitMQExchange;
+		this.rabbitMQQueue = rabbitMQQueue;
 	}
 
 	public String getId() {
@@ -70,8 +70,8 @@ public class Stream {
 		return format;
 	}
 	
-	public String getTopic() {
-		return topic;
+	public String getKafkaTopic() {
+		return kafkaTopic;
 	}
 	
 	public String getUser() {
@@ -86,7 +86,7 @@ public class Stream {
 		return urlLogin;
 	}
 	
-	public String getRabbitMQExchange() {
-		return rabbitMQExchange;
+	public String getRabbitMQQueue() {
+		return rabbitMQQueue;
 	}
 }
