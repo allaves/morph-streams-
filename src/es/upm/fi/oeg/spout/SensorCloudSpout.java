@@ -50,7 +50,6 @@ public class SensorCloudSpout extends BaseRichSpout {
 		try {
 			QueueingConsumer.Delivery delivery = consumer.nextDelivery();
 			String data = new String(delivery.getBody());
-			//System.out.println(" [x] Received '" + data + "'");
 			collector.emit(new Values(data));
 		} catch (ShutdownSignalException | ConsumerCancelledException | InterruptedException e) {
 			e.printStackTrace();
