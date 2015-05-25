@@ -14,6 +14,20 @@
   		<groupId>com.rabbitmq</groupId>
   		<artifactId>amqp-client</artifactId>
   		<version>3.5.1</version>
+  		<exclusions>
+		  <exclusion> 
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-log4j12</artifactId>
+		  </exclusion>
+		  <exclusion> 
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-api</artifactId>
+		  </exclusion>
+	  	  <exclusion> 
+		    <groupId>log4j</groupId>
+		    <artifactId>log4j</artifactId>
+		  </exclusion>
+		</exclusions>
 	</dependency>
   	<dependency>
   		<groupId>org.apache.storm</groupId>
@@ -38,6 +52,12 @@
 	    <groupId>org.apache.kafka</groupId>
 	    <artifactId>kafka_2.9.2</artifactId>
 	    <version>0.8.2.0</version>
+	    <exclusions>
+		  <exclusion> 
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-log4j12</artifactId>
+		  </exclusion>
+		</exclusions>
 	</dependency>
 	<dependency>
       <groupId>org.apache.storm</groupId>

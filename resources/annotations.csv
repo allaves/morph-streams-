@@ -1,0 +1,18 @@
+Sensor Cloud phenomenon,SWEET concept
+rain_trace,Rainfall
+Rain,Rainfall
+rainfall-per-hour,Rainfall
+air_temp,Temperature
+temperature_deg_c,Temperature
+temperature,Temperature
+average-air-temperature,Temperature
+dewpt,DewPoint
+Evap,Evaporation
+wind_dir,Direction
+average-wind-direction,Direction
+wind_spd_kmh,WindSpeed
+average-wind-speed,WindSpeed
+rel_hum,RelativeHumidity
+average-relative-humidity,RelativeHumidity
+cloud_base_m,CloudBase
+moisture,Moisture

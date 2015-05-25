@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import backtype.storm.task.OutputCollector;
@@ -23,7 +24,7 @@ import backtype.storm.tuple.Values;
  */
 public class SweetAnnotationsBolt extends BaseRichBolt {
 	
-	private static final String SWEET_NAMESPACE = "http://sweet.jpl.nasa.gov/2.3/sweetAll.owl";
+	private static final String SWEET_NAMESPACE = "http://sweet.jpl.nasa.gov/2.3/sweetAll.owl/";
 	private OutputCollector collector;
 	private HashMap<String, String> sweetMappings;
 
@@ -34,27 +35,38 @@ public class SweetAnnotationsBolt extends BaseRichBolt {
 		readAnnotationsFile("resources/annotations.csv");
 	}
 
+	
 	private void readAnnotationsFile(String filePath) {
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(new File(filePath)));
 			// Skips first line: Sensor Cloud phenomenon,SWEET concept
+			String[] lineMapping;
 			String line = br.readLine();
 			while ((line = br.readLine()) != null) {
-				String[] lineMapping = line.split(",");
+				lineMapping = line.split(",");
 				sweetMappings.put(lineMapping[0], SWEET_NAMESPACE + lineMapping[1]);
 			}
 			br.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
 	}
+	
 
 	@Override
 	public void execute(Tuple tuple) {
 		String phenomenon = tuple.getStringByField("phenomenon");
-		String sweetConcept = sweetMappings.get(phenomenon);
-		collector.emit(new Values(tuple.getValues().add(sweetConcept)));
+		System.out.println(phenomenon);
+		
+		String sweetConcept = null;
+		if (sweetMappings.containsKey(phenomenon)) {
+			sweetConcept = sweetMappings.get(phenomenon);
+		}
+		System.out.println("Annotation of " + phenomenon + ": " + sweetConcept);
+		
+		tuple.getValues().add(sweetConcept);
+		//System.out.println(tuple);
+		collector.emit(tuple.getValues());
 		collector.ack(tuple);
 	}
 

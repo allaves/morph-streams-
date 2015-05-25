@@ -63,8 +63,11 @@ public class SensorCloudParserBolt extends BaseRichBolt {
 				jsonObj = (JSONObject) jsonParser.parse(objString);
 				JSONObject platformObj = (JSONObject) jsonObj.get("platform");
 				JSONObject locationObj = (JSONObject) platformObj.get("location");
-				lon = (String) locationObj.get("longitude");
-				lat = (String) locationObj.get("latitude");
+				// Some platforms do not have a location attached
+				if (locationObj != null) {
+					lon = (String) locationObj.get("longitude");
+					lat = (String) locationObj.get("latitude");
+				}
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
