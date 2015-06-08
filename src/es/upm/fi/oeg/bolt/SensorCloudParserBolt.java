@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -23,9 +24,11 @@ import backtype.storm.tuple.Values;
 public class SensorCloudParserBolt extends BaseRichBolt {
 
 	private OutputCollector collector;
+	private HashMap<String, String[]> platformLocationCache;
 	
 	@Override
 	public void prepare(Map stormConf, TopologyContext context,	OutputCollector collector) {
+		this.platformLocationCache = new HashMap<String, String[]>();
 		this.collector = collector;
 	}
 
@@ -43,43 +46,51 @@ public class SensorCloudParserBolt extends BaseRichBolt {
 			String[] path = messageArray[3].split("\"")[1].split("\\.");
 			String network = path[0];
 			String platform = path[1];
-			String sensor = path[2];
-			String phenomenon = path[3];		// Observed property
 			String platformUrl = "http://www.sense-t.csiro.au/sensorcloud/v1/network/" + network + "/platform/" + platform;
-		
-			// Get coordinates from API
+			String sensor = path[2];
+			String sensorUrl = platformUrl + "/sensor/" + sensor;
+			String phenomenon = path[3];		// Observed property
+			
 			String lat = null;
 			String lon = null;
-			String line = "";
-			String objString = "";
-			JSONObject jsonObj = null;
-			try {
-				URLConnection connection = new URL(platformUrl).openConnection();
-				BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-				while ((line = br.readLine()) != null) {
-					objString += line;
+			if (!(platformLocationCache.containsKey(platformUrl))) {
+				// Get platform location from API
+				String line = "";
+				String objString = "";
+				JSONObject jsonObj = null;
+				try {
+					URLConnection connection = new URL(platformUrl).openConnection();
+					BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+					while ((line = br.readLine()) != null) {
+						objString += line;
+					}
+					JSONParser jsonParser = new JSONParser();
+					jsonObj = (JSONObject) jsonParser.parse(objString);
+					JSONObject platformObj = (JSONObject) jsonObj.get("platform");
+					JSONObject locationObj = (JSONObject) platformObj.get("location");
+					// Some platforms do not have a location attached
+					if (locationObj != null) {
+						lon = (String) locationObj.get("longitude");
+						lat = (String) locationObj.get("latitude");
+						platformLocationCache.put(platformUrl, new String[]{lat, lon});
+					}
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-				JSONParser jsonParser = new JSONParser();
-				jsonObj = (JSONObject) jsonParser.parse(objString);
-				JSONObject platformObj = (JSONObject) jsonObj.get("platform");
-				JSONObject locationObj = (JSONObject) platformObj.get("location");
-				// Some platforms do not have a location attached
-				if (locationObj != null) {
-					lon = (String) locationObj.get("longitude");
-					lat = (String) locationObj.get("latitude");
-				}
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			}
+			else {
+				lat = platformLocationCache.get(platformUrl)[0];
+				lon = platformLocationCache.get(platformUrl)[1];
 			}
 			
 			// Convert system time to xsd:dateTime
 			String observationResultTime = DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(System.currentTimeMillis());
 			// Emit values
-			collector.emit(new Values(observationResultTime, observationSamplingTime, value, network, platform, sensor, phenomenon, lat, lon));
+			collector.emit(new Values(observationResultTime, observationSamplingTime, value, network, platform, sensorUrl, phenomenon, lat, lon));
 		}
 		//else {
 			// TODO: Handle tag messages
