@@ -32,12 +32,12 @@ public class KafkaPublisherBolt extends BaseRichBolt {
 			int lastIndex = splittedObservedProperty.length;
 			String topic = splittedObservedProperty[lastIndex-1];
 			// Creates a new kafka record with the annotated observed property as a topic (channel)
-			record = new ProducerRecord<String, Object>(topic, tuple.toString());
+			record = new ProducerRecord<String, Object>(topic, tuple.getValues().toString());
 			// Sends message to Kafka
 			StreamHandler.getInstance().getKafkaProducer().send(record);
 		}
 		// Creates a new kafka generic record
-		record = new ProducerRecord<String, Object>("all", tuple.toString());
+		record = new ProducerRecord<String, Object>("all", tuple.getValues().toString());
 		// Sends message to Kafka
 		StreamHandler.getInstance().getKafkaProducer().send(record);
 		

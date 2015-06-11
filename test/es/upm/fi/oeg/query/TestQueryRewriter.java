@@ -13,6 +13,7 @@ public class TestQueryRewriter {
 	
 	private QueryRewriter queryRewriter;
 	private String queryString;
+	private String q1;
 	private Query query;
 
 	@Before
@@ -28,17 +29,27 @@ public class TestQueryRewriter {
 				+ "?output emt:timeToBusValue ?av. "
 				+ "?av qudt:numericValue ?timeto. "
 				+ "}";
+		
+		q1 = "PREFIX ssn: <http://purl.oclc.org/NET/ssnx/ssn#> "
+				+ "SELECT DISTINCT ?sensor ?value "
+				+ "FROM NAMED STREAM <http://sensorcloud.linkeddata.es/obs/> [NOW - 1 HOURS] "
+				+ "WHERE { "
+				+ "?observation a ssn:Observation. "
+				+ "?observation ssn:observedBy ?sensor. "
+				+ "?observation ssn:observationResult ?result. "
+				+ "?result ssn:hasValue ?value. "
+				+ "}";
 	}
 
 	@Test
 	public void testQueryToAlgebra() {
-		query = new Query(queryString);
+		query = new Query(q1);
 		
 		// TODO: The application stops without any visible error or warning!
 		queryRewriter = new QueryRewriter();
 		AlgebraOp algebraOp = queryRewriter.queryToAlgebra(query);
-		algebraOp.display();
-		assertTrue(true);
+		algebraOp.display(); // It does not show anything
+		System.out.println(algebraOp.toString());
 	}
 
 }

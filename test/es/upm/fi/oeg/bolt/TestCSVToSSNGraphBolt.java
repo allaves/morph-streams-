@@ -64,18 +64,23 @@ public class TestCSVToSSNGraphBolt {
 		
 		// Topology general configuration
 		Config config = new Config();
+		config.setDebug(true);
 		config.setMessageTimeoutSecs(10);
 		
 		// SSN mapping configuration
 		Map<String, String> ssnConfig = new HashMap<String, String>();
 		
 		// TODO: What happens when there is no observed property in the CSV? -> It should be submitted when the stream is registered in the system
+		config.put(SSNMapping.OBSERVED_PROPERTY, "http://example.org/observedProperty/vehicleDeparture");
 		ssnConfig.put(SSNMapping.OBSERVED_PROPERTY, "http://example.org/observedProperty/vehicleDeparture");
+		config.put(SSNMapping.MAPPING_DATA_VALUE, "departure");
 		ssnConfig.put(SSNMapping.MAPPING_DATA_VALUE, "departure");
+		config.put(SSNMapping.MAPPING_LATITUDE, "lat");
 		ssnConfig.put(SSNMapping.MAPPING_LATITUDE, "lat");
+		config.put(SSNMapping.MAPPING_LONGITUDE, "lon");
 		ssnConfig.put(SSNMapping.MAPPING_LONGITUDE, "lon");
+		config.put(SSNMapping.MAPPING_FEATURE_OF_INTEREST, "vehicleId");
 		ssnConfig.put(SSNMapping.MAPPING_FEATURE_OF_INTEREST, "vehicleId");
-		config.setEnvironment(ssnConfig);
 		
 		LocalCluster cluster = new LocalCluster();
 		cluster.submitTopology("hsl-test", config, builder.createTopology());

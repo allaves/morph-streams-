@@ -17,37 +17,43 @@ import es.upm.fi.oeg.stream.Stream.FORMAT;
 
 public class TestStreamHandler {
 	
-	private Stream stream1, stream2;
-	
 	@Before
-	public void setUp() throws MalformedURLException {
-		// Sets the ESA authenticator
-		//Authenticator.setDefault(new MyAuthenticator());
-		stream1 = new Stream(new URL("https://esa.csiro.au/aus/alertHist?queryType=latest&listTweetIds=true"), 2000, FORMAT.JSON, "test");
-		//stream2 = new Stream(new URL("http://83.145.232.209:10001/?type=vehicles&lng1=23&lat1=60&lng2=26&lat2=61"), 1000, FORMAT.CSV, "hsl");
-	}
+	public void setUp() {}
 
 	@Test
 	public void testRegisterStream() {
-		assertTrue(StreamHandler.getInstance().registerStream(stream1));
-		assertFalse(StreamHandler.getInstance().registerStream(stream1));
-//		assertTrue(StreamHandler.getInstance().registerStream(stream2));
-//		assertFalse(StreamHandler.getInstance().registerStream(stream2));
+		assertEquals("https://esa.csiro.au/aus/alertHist?queryType=latest&listTweetIds=true--60000", 
+				StreamHandler.getInstance().registerStreamWithFormBasedLogin(
+						"https://esa.csiro.au/aus/alertHist?queryType=latest&listTweetIds=true", 
+						60000, FORMAT.JSON, "test", "allaves", "cacafut1", "https://esa.csiro.au/aus/j_security_check"));
+		assertEquals(null, 
+				StreamHandler.getInstance().registerStreamWithFormBasedLogin(
+						"https://esa.csiro.au/aus/alertHist?queryType=latest&listTweetIds=true", 
+						60000, FORMAT.JSON, "test", "allaves", "cacafut1", 
+						"https://esa.csiro.au/aus/j_security_check"));
+//		assertEquals("http://83.145.232.209:10001/?type=vehicles&lng1=23&lat1=60&lng2=26&lat2=61--1000", 
+//				StreamHandler.getInstance().registerStream(
+//						"http://83.145.232.209:10001/?type=vehicles&lng1=23&lat1=60&lng2=26&lat2=61", 
+//						1000, FORMAT.CSV_DOCUMENT, "hsl"));
+//		assertEquals(null, 
+//				StreamHandler.getInstance().registerStream(
+//						"http://83.145.232.209:10001/?type=vehicles&lng1=23&lat1=60&lng2=26&lat2=61", 
+//						1000, FORMAT.CSV_DOCUMENT, "hsl"));
 	}
 
 	@Test
 	public void testGetRegisteredStreams() {
 		assertFalse(StreamHandler.getInstance().getRegisteredStreams().isEmpty());
-		//assertEquals(StreamHandler.getInstance().getRegisteredStreams().size(), 2);
+		assertEquals(StreamHandler.getInstance().getRegisteredStreams().size(), 2);
 	}
 	
 	@Test
 	public void testDeregisterStream() throws InterruptedException {
-		Thread.sleep(30000);
-		assertTrue(StreamHandler.getInstance().deregisterStream(stream1.getId()));
-		assertFalse(StreamHandler.getInstance().deregisterStream(stream1.getId()));
-//		assertTrue(StreamHandler.getInstance().deregisterStream(stream2.getId()));
-//		assertFalse(StreamHandler.getInstance().deregisterStream(stream2.getId()));
+		Thread.sleep(300000);
+		assertTrue(StreamHandler.getInstance().deregisterStream("https://esa.csiro.au/aus/alertHist?queryType=latest&listTweetIds=true--60000"));
+		assertFalse(StreamHandler.getInstance().deregisterStream("https://esa.csiro.au/aus/alertHist?queryType=latest&listTweetIds=true--60000"));
+		assertTrue(StreamHandler.getInstance().deregisterStream("http://83.145.232.209:10001/?type=vehicles&lng1=23&lat1=60&lng2=26&lat2=61--1000"));
+		assertFalse(StreamHandler.getInstance().deregisterStream("http://83.145.232.209:10001/?type=vehicles&lng1=23&lat1=60&lng2=26&lat2=61--1000"));
 	}
 
 
