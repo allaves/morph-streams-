@@ -2,6 +2,8 @@ package es.upm.fi.oeg.stream;
 
 import java.net.URL;
 
+import es.upm.fi.oeg.utils.SSNMapping;
+
 
 public class Stream {
 	
@@ -11,6 +13,7 @@ public class Stream {
 	private long millisecondsRate;
 	private String format;
 	private String kafkaTopic;
+	private SSNMapping ssnMapping;
 	
 	// In case of having an API with authentication
 	private String user;
@@ -21,11 +24,11 @@ public class Stream {
 	
 	
 	public enum FORMAT {
-		CSV_LINE, CSV_DOCUMENT, RDF, JSON
+		CSV_LINE, CSV_DOCUMENT, RDF, JSON, SENSOR_CLOUD
 	}
 	
 	public Stream(URL url, int millisecondsRate, FORMAT format, String kafkaTopic) {
-		this.id = url + "--" + Integer.toString(millisecondsRate);
+		this.id = url.toString();
 		this.url = url;
 		this.millisecondsRate = millisecondsRate;
 		this.format = format.toString();
@@ -33,7 +36,7 @@ public class Stream {
 	}
 	
 	public Stream(URL url, int millisecondsRate, FORMAT format, String kafkaTopic, String user, String password, URL urlLogin) {
-		this.id = url + "--" + Integer.toString(millisecondsRate);
+		this.id = url.toString();
 		this.url = url;
 		this.millisecondsRate = millisecondsRate;
 		this.format = format.toString();
@@ -43,8 +46,8 @@ public class Stream {
 		this.urlLogin = urlLogin;
 	}
 	
-	public Stream(URL url, int millisecondsRate, FORMAT format, String kafkaTopic, String user, String password, String rabbitMQQueue) {
-		this.id = url + "--" + Integer.toString(millisecondsRate);
+	public Stream(URL url, int millisecondsRate, FORMAT format, String kafkaTopic, String user, String password, String rabbitMQQueue, SSNMapping ssnMapping) {
+		this.id = url.toString();
 		this.url = url;
 		this.millisecondsRate = millisecondsRate;
 		this.format = format.toString();
@@ -52,6 +55,7 @@ public class Stream {
 		this.user = user;
 		this.password = password;
 		this.rabbitMQQueue = rabbitMQQueue;
+		this.ssnMapping = ssnMapping;
 	}
 
 	public String getId() {
@@ -88,5 +92,9 @@ public class Stream {
 	
 	public String getRabbitMQQueue() {
 		return rabbitMQQueue;
+	}
+	
+	public SSNMapping getSSNMapping() {
+		return ssnMapping;
 	}
 }

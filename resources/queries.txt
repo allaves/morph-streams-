@@ -1,0 +1,12 @@
+#Q1. Get the rainfall observed once in an hour
+PREFIX ssn: <http://purl.oclc.org/NET/ssnx/ssn#>
+
+SELECT DISTINCT ?sensor ?value
+FROM NAMED STREAM <http://sensorcloud.linkeddata.es/obs/> [NOW - 1 HOURS]
+WHERE {
+  ?observation a ssn:Observation.
+  ?observation ssn:observedBy ?sensor.
+  ?observation ssn:observationResult ?result.
+  ?result ssn:hasValue ?value.
+}
+

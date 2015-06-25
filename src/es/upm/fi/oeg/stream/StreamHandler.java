@@ -23,6 +23,7 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
 import es.upm.fi.oeg.stream.Stream.FORMAT;
+import es.upm.fi.oeg.utils.SSNMapping;
 
 /*
  * Singleton
@@ -109,7 +110,7 @@ public class StreamHandler {
 			streamRegistry.put(stream.getId(), stream);
 			log.info("Stream registered with ID: " + stream.getId());
 			// Initiates the producer to start publishing data
-			startDataPublishing(stream);
+			//startDataPublishing(stream);
 			return true;
 		}
 		else {
@@ -160,10 +161,10 @@ public class StreamHandler {
 	/*
 	 * Registers a stream from RabbitMQ (if it was not in the registry) and starts publishing data to Kafka
 	 */
-	public String registerStreamRabbitMQ(String url, int millisecondsRate, FORMAT format, String kafkaTopic, String user, String password, String rabbitMQExchange) {
+	public String registerStreamRabbitMQ(String url, int millisecondsRate, FORMAT format, String kafkaTopic, String user, String password, String rabbitMQExchange, SSNMapping ssnMapping) {
 		Stream stream = null;
 		try {
-			stream = new Stream(new URL(url), millisecondsRate, format, kafkaTopic, user, password, rabbitMQExchange);
+			stream = new Stream(new URL(url), millisecondsRate, format, kafkaTopic, user, password, rabbitMQExchange, ssnMapping);
 		} catch (MalformedURLException e) {
 			log.error(e.getMessage());
 			return null;
@@ -220,6 +221,13 @@ public class StreamHandler {
 	 */
 	public Collection<String> getRegisteredStreams() {
 		return streamRegistry.keySet();
+	}
+
+	/*
+	 * Returns a Stream given its identifier
+	 */
+	public Stream getStream(String streamUri) {
+		return streamRegistry.get(streamUri);
 	}
 
 }

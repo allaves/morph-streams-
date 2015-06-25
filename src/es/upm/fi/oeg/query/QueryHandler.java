@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import es.upm.fi.oeg.morph.stream.evaluate.QueryEvaluator;
 import es.upm.fi.oeg.morph.stream.query.SqlQuery;
+import es.upm.fi.oeg.stream.Stream;
 import es.upm.fi.oeg.stream.StreamHandler;
 
 /*
@@ -109,13 +110,25 @@ public class QueryHandler {
 	public Collection<String> streamAvailability(Query query) {
 		ArrayList<String> availableStreams = new ArrayList<String>();
 		for (String registeredStreamId : StreamHandler.getInstance().getRegisteredStreams()) {
-			for (String queryStreamUrl : query.getStreams()) {
+			for (String queryStreamUrl : query.getStreamUris()) {
 				if (registeredStreamId.contains(queryStreamUrl)) {
 					availableStreams.add(registeredStreamId);
 				}
 			}
 		}
 		return availableStreams;
+	}
+	
+	/*
+	 * Returns a collection of streams given a query identifier
+	 */
+	public Collection<Stream> getStreams(String queryId) {
+		ArrayList<Stream> streams = new ArrayList<Stream>();
+		Query q = queryRegistry.get(queryId);
+		for (String streamUri : q.getStreamUris()) {
+			streams.add(StreamHandler.getInstance().getStream(streamUri));
+		}
+		return streams;
 	}
 	
 	
