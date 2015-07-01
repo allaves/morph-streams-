@@ -32,6 +32,8 @@ import es.upm.fi.oeg.morph.r2rml.R2rmlReader;
 import es.upm.fi.oeg.morph.stream.algebra.AlgebraOp;
 import es.upm.fi.oeg.morph.stream.algebra.MultiUnionOp;
 import es.upm.fi.oeg.morph.stream.algebra.ProjectionOp;
+import es.upm.fi.oeg.morph.stream.algebra.xpr.UnassignedVarXpr;
+import es.upm.fi.oeg.morph.stream.algebra.xpr.Xpr;
 import es.upm.fi.oeg.morph.stream.evaluate.QueryEvaluator;
 import es.upm.fi.oeg.morph.stream.query.Modifiers.OutputModifier;
 import es.upm.fi.oeg.morph.stream.query.Modifiers;
@@ -47,11 +49,13 @@ import es.upm.fi.oeg.sparqlstream.StreamQuery;
 import es.upm.fi.oeg.stream.Stream;
 import es.upm.fi.oeg.stream.StreamHandler;
 import es.upm.fi.oeg.utils.SSNMapping;
+import es.upm.fi.oeg.utils.ScalaConverter;
 
 public class QueryRewriter {
 	
 	private QueryEvaluator queryEvaluator;
 	private QueryRewriting queryRewriting;
+	private ScalaConverter scalaConverter;
 	
 	// Support for one SSNMapping
 	private SSNMapping ssnMapping;
@@ -67,6 +71,7 @@ public class QueryRewriter {
 	 */
 	public QueryRewriter() {
 		streams = new ArrayList<Stream>();
+		scalaConverter = new ScalaConverter();
 	}
 	
 	
@@ -85,7 +90,7 @@ public class QueryRewriter {
 		long span2 = System.currentTimeMillis() - ini;
 		
 		// Implementing...
-		AlgebraOp algebraOp = navigate(op, query, null);
+		AlgebraOp algebraOp = navigate(op, query);
 		
 		return algebraOp;
 	}
@@ -93,42 +98,47 @@ public class QueryRewriter {
 	/*
 	 * Under construction
 	 */
-	private AlgebraOp navigate(Op op, StreamQuery query, OpGraph graph) {
+	private AlgebraOp navigate(Op op, StreamQuery query) {
 		AlgebraOp algebraOp = null;
-		if (op.getClass().isInstance(OpBGP.class)) {
-			return processBGP((OpBGP) op, query, graph);
+		if (op instanceof OpBGP) {
+			return processBGP((OpBGP) op, query);
 		}
-		else if (op.getClass().isInstance(OpProject.class)) {
+		else if (op instanceof OpProject) {
+			AlgebraOp auxOp = navigate(((OpProject) op).getSubOp(), query);
+			Map<String, Xpr> expressions = new HashMap<String, Xpr>();
+			for (Var var : ((OpProject) op).getVars()) {
+				expressions.put(var.getVarName(), UnassignedVarXpr.copy());
+			}
+			return new ProjectionOp(scalaConverter.convert(expressions), auxOp, query.isDistinct());
+		}
+		else if (op instanceof OpJoin) {
 			
 		}
-		else if (op.getClass().isInstance(OpJoin.class)) {
+		else if (op instanceof OpLeftJoin) {
 			
 		}
-		else if (op.getClass().isInstance(OpLeftJoin.class)) {
+		else if (op instanceof OpFilter) {
 			
 		}
-		else if (op.getClass().isInstance(OpFilter.class)) {
+		else if (op instanceof OpService) {
 			
 		}
-		else if (op.getClass().isInstance(OpService.class)) {
+		else if (op instanceof OpDistinct) {
+			return navigate(((OpDistinct) op).getSubOp(), query);
+		}
+		else if (op instanceof OpExtend) {
 			
 		}
-		else if (op.getClass().isInstance(OpDistinct.class)) {
-			return navigate(((OpDistinct) op).getSubOp(), query, null);
-		}
-		else if (op.getClass().isInstance(OpExtend.class)) {
+		else if (op instanceof OpGroup) {
 			
 		}
-		else if (op.getClass().isInstance(OpGroup.class)) {
+		else if (op instanceof OpUnion) {
 			
 		}
-		else if (op.getClass().isInstance(OpUnion.class)) {
+		else if (op instanceof OpStreamGraph) {
 			
 		}
-		else if (op.getClass().isInstance(OpStreamGraph.class)) {
-			
-		}
-		else if (op.getClass().isInstance(OpGraph.class)) {
+		else if (op instanceof OpGraph) {
 			
 		}
 		else {
@@ -143,7 +153,8 @@ public class QueryRewriter {
 	 * Method that processes Basic Graph Patterns (BGP)
 	 * TODO: Check how this is implemented at Linked Data Fragments - http://linkeddatafragments.org/
 	 */
-	private AlgebraOp processBGP(OpBGP bgpOp, StreamQuery query, OpGraph graph) {
+	private AlgebraOp processBGP(OpBGP bgpOp, StreamQuery query) {
+		Map<Triple, AlgebraOp> bgpOperators = new HashMap<Triple, AlgebraOp>();
 		AlgebraOp conj = null;
 		MultiUnionOp multiUnionOp = null;
 		// Traverse through the triples in a BGP - For each triple...
@@ -152,17 +163,24 @@ public class QueryRewriter {
 			if (t.getPredicate().isVariable()) {
 				// E.g. "?observation ?temporalProperty \"2015-06-17T12:00:000Z\"^^xsd:dateTime. "
 				// val poMaps = reader.allPredicates - List with all predicates of the mapping
+				Map<String, String> predicateObjectMap = ssnMapping.getAllPredicates();
+				
+				
+				
 				// val children = poMaps.map
 				// ...
 				Map<String, AlgebraOp> childrenOps = new HashMap<String, AlgebraOp>();
-				//multiUnionOp = new MultiUnionOp(childrenOps);
-				//ProjectionOp projectionOp = ...
 				
+				multiUnionOp = new MultiUnionOp(scalaConverter.convert(childrenOps));
+				//ProjectionOp projectionOp = ...
+				bgpOperators.put(t, multiUnionOp);
 			}
 			else if (t.getPredicate().hasURI(RDF.typeProp().getURI())) {
 				// E.g. "?observation a ssn:Observation. "
 				// val tMaps = reader.filterBySubject(t.getObject.getURI)
 				List<String> subjectMappings = ssnMapping.getMappingsBySubject(t.getObject().getURI());
+				
+				
 			}
 			else {
 				// E.g. "?observation ssn:observedBy ?sensor. "
@@ -171,6 +189,7 @@ public class QueryRewriter {
 				
 				
 			}
+			
 		}
 		return conj;
 	}

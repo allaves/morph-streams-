@@ -3,6 +3,7 @@ package es.upm.fi.oeg.utils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SSNMapping {
 	
@@ -80,6 +81,11 @@ public class SSNMapping {
 	}
 
 	public List<String> getMappingsByPredicate(String predicateUri) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Map<String, String> getAllPredicates() {
 		// TODO Auto-generated method stub
 		return null;
 	}
