@@ -30,6 +30,10 @@ public class SSNMapping {
 	public SSNMapping(HashMap<String, String> mapping) {
 		this.mapping = mapping;
 	}
+	
+	public HashMap<String, String> getMappings() {
+		return mapping;
+	}
 
 	public List<String> getMappingsBySubject(String subjectUri) {
 		List<String> mappingsBySubject = new ArrayList<String>();
@@ -74,20 +78,66 @@ public class SSNMapping {
 				}
 			}
 		}
-
 		return mappingsBySubject;
 		
 		
 	}
 
+	/*
+	 * Returns the list of mappings related to a predicate
+	 */
 	public List<String> getMappingsByPredicate(String predicateUri) {
-		// TODO Auto-generated method stub
-		return null;
+		List<String> mappingsByPredicate = new ArrayList<String>();
+		if (predicateUri.equalsIgnoreCase(NS_SSN + "observedProperty")) {
+			if (mapping.containsKey(MAPPING_OBSERVED_PROPERTY)) {
+				mappingsByPredicate.add(mapping.get(MAPPING_OBSERVED_PROPERTY));
+			}
+		}
+		else if (predicateUri.equalsIgnoreCase(NS_SSN + "hasDataValue")) {
+			if (mapping.containsKey(MAPPING_DATA_VALUE)) {
+				mappingsByPredicate.add(mapping.get(MAPPING_DATA_VALUE));
+			}
+		}
+		else if (predicateUri.equalsIgnoreCase(NS_SSN + "observationSamplingTime")) {
+			if (mapping.containsKey(MAPPING_OBSERVATION_SAMPLING_TIME)) {
+				mappingsByPredicate.add(mapping.get(MAPPING_OBSERVATION_SAMPLING_TIME));
+			}
+		}
+		else if (predicateUri.equalsIgnoreCase(NS_SSN + "observationResultTime")) {
+			if (mapping.containsKey(MAPPING_OBSERVATION_RESULT_TIME)) {
+				mappingsByPredicate.add(mapping.get(MAPPING_OBSERVATION_RESULT_TIME));
+			}
+		}
+		else if (predicateUri.equalsIgnoreCase(NS_SSN + "featureOfInterest")) {
+			if (mapping.containsKey(MAPPING_FEATURE_OF_INTEREST)) {
+				mappingsByPredicate.add(mapping.get(MAPPING_FEATURE_OF_INTEREST));
+			}
+		}
+		else if (predicateUri.equalsIgnoreCase(NS_SSN + "observedBy")) {
+			if (mapping.containsKey(MAPPING_OBSERVED_BY)) {
+				mappingsByPredicate.add(mapping.get(MAPPING_OBSERVED_BY));
+			}
+		}
+		else if (predicateUri.equalsIgnoreCase(NS_GEOSPARQL + "asWKT")) {
+			if (mapping.containsKey(MAPPING_GEOSPARQL_WKT)) {
+				mappingsByPredicate.add(mapping.get(MAPPING_GEOSPARQL_WKT));
+			}
+			else if (mapping.containsKey(MAPPING_LATITUDE) && mapping.containsKey(MAPPING_LONGITUDE)) {
+				mappingsByPredicate.add(MAPPING_LATITUDE);
+				mappingsByPredicate.add(MAPPING_LONGITUDE);
+				if (mapping.containsKey(MAPPING_CRS)) {
+					mappingsByPredicate.add(MAPPING_CRS);
+				}
+			}
+		}
+		return mappingsByPredicate;
 	}
 
+	/*
+	 * Returns a map containing all predicates
+	 */
 	public Map<String, String> getAllPredicates() {
-		// TODO Auto-generated method stub
-		return null;
+		return getMappings();
 	}
 	
 	

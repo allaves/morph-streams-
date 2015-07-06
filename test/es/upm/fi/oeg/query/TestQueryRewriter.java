@@ -50,7 +50,7 @@ public class TestQueryRewriter {
 				+ "SELECT DISTINCT ?sensor ?value "
 				+ "FROM NAMED STREAM <http://sensorcloud.linkeddata.es/obs/> [NOW - 1 HOURS] "
 				+ "WHERE { "
-				+ "?observation a ssn:Observation. "
+				+ "?observation ?a ssn:Observation. "
 				+ "?observation ssn:observedBy ?sensor. "
 				+ "?observation ssn:observationResult ?result. "
 				+ "?result ssn:hasValue ?value. "
