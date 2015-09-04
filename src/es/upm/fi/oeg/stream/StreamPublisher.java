@@ -14,7 +14,6 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DefaultConsumer;
 
 import es.upm.fi.oeg.stream.Stream.FORMAT;
-import es.upm.fi.oeg.utils.FormBasedAuthentication;
 
 
 /*
@@ -24,7 +23,6 @@ public class StreamPublisher implements Runnable {
 	private Logger log = Logger.getLogger(this.getClass());
 	
 	private Stream stream;
-	private FormBasedAuthentication auth;
 	// RabbitMQ fields
 	
 
@@ -37,25 +35,25 @@ public class StreamPublisher implements Runnable {
 		try {
 			String message = null;
 			ProducerRecord<String, Object> record = null;
-			// If the stream has form-based authentication credentials
-			if (stream.getUser() != null) {
-				// Form-based login - If the client is not authenticated
-				if (auth == null) {
-					auth = new FormBasedAuthentication(stream.getUrl().toString(), 
-							stream.getUrlLogin().toString(), stream.getUser(), stream.getPassword());
-					log.info("Form-based authentication.");
-					auth.authenticate();
-				}
-				message = auth.getData();
-				// TODO: support other authentication methods, e.g. Basic.
-//				else if (!message.contains("j_username")) {					
+			// DEPRECATED - If the stream has form-based authentication credentials
+//			if (stream.getUser() != null) {
+//				// Form-based login - If the client is not authenticated
+//				if (auth == null) {
+//					auth = new FormBasedAuthentication(stream.getUrl().toString(), 
+//							stream.getUrlLogin().toString(), stream.getUser(), stream.getPassword());
+//					log.info("Form-based authentication.");
+//					auth.authenticate();
 //				}
-				record = new ProducerRecord<String, Object>(stream.getKafkaTopic(), message);
-				// Sends message to Kafka
-				StreamHandler.getInstance().getKafkaProducer().send(record);
-			}
+//				message = auth.getData();
+//				// TODO: support other authentication methods, e.g. Basic.
+////				else if (!message.contains("j_username")) {					
+////				}
+//				record = new ProducerRecord<String, Object>(stream.getKafkaTopic(), message);
+//				// Sends message to Kafka
+//				StreamHandler.getInstance().getKafkaProducer().send(record);
+//			}
 			// If the stream comes from RabbitMQ
-			else if (stream.getRabbitMQQueue() != null) {
+			if (stream.getRabbitMQQueue() != null) {
 				ConnectionFactory factory = new ConnectionFactory();
 				factory.setHost(stream.getUrl().toString());
 				Connection connection = factory.newConnection();

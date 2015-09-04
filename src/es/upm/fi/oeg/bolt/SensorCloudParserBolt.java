@@ -9,9 +9,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+
+import com.esotericsoftware.minlog.Log;
+import com.esotericsoftware.minlog.Log.Logger;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -21,6 +25,9 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
+/*
+ * Converts Sensor Cloud messages to field-named tuples
+ */
 public class SensorCloudParserBolt extends BaseRichBolt {
 
 	private OutputCollector collector;
@@ -59,19 +66,40 @@ public class SensorCloudParserBolt extends BaseRichBolt {
 				String objString = "";
 				JSONObject jsonObj = null;
 				try {
-					URLConnection connection = new URL(platformUrl).openConnection();
+					URLConnection connection = new URL(platformUrl + "/deployment").openConnection();
 					BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 					while ((line = br.readLine()) != null) {
 						objString += line;
 					}
 					JSONParser jsonParser = new JSONParser();
 					jsonObj = (JSONObject) jsonParser.parse(objString);
-					JSONObject platformObj = (JSONObject) jsonObj.get("platform");
-					JSONObject locationObj = (JSONObject) platformObj.get("location");
-					// Some platforms do not have a location attached
-					if (locationObj != null) {
-						lon = (String) locationObj.get("longitude");
-						lat = (String) locationObj.get("latitude");
+					JSONArray deploymentArray = (JSONArray) jsonObj.get("deployment");
+					// Some platforms do not have a deployment attached
+					if (!deploymentArray.isEmpty()) {
+						JSONObject hrefObj = (JSONObject) deploymentArray.get(0);
+						String deploymentUrl = (String) hrefObj.get("href");
+						br.close();
+						// New connection
+						connection = new URL(deploymentUrl).openConnection();
+						System.out.println("### TEST ###: " + deploymentUrl);
+						br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+						objString = "";
+						while ((line = br.readLine()) != null) {
+							objString += line;
+						}
+						jsonObj = (JSONObject) jsonParser.parse(objString);
+						JSONObject platformObj = (JSONObject) jsonObj.get("sfl:PlatformDeployment");
+						JSONObject locationObj = (JSONObject) platformObj.get("sfl:deploymentLocation");
+						JSONObject pointObj = (JSONObject) locationObj.get("gml:Point");
+						// TODO: get srsName and include CRS in the tuples
+						//JSONObject attributeObj = (JSONObject) pointObj.get("attribute");
+						//String srs = ...
+						
+						// e.g. gml:pos: "147.0075 -43.3167"
+						String location = (String) pointObj.get("gml:pos");
+						String[] latLon = location.split(" "); 
+						lat = latLon[0];
+						lon = latLon[1];
 						platformLocationCache.put(platformUrl, new String[]{lat, lon});
 					}
 				} catch (ParseException e) {
@@ -103,6 +131,7 @@ public class SensorCloudParserBolt extends BaseRichBolt {
 
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
+		// TODO: include CRS in the tuple
 		declarer.declare(new Fields("observationResultTime", "observationSamplingTime", "value", "network", "platform", "sensor", "phenomenon", "lat", "lon"));
 	}
 

@@ -30,7 +30,7 @@ public class CSVPublisher implements Runnable {
 				strBuilder.append(line).append("\n");
 			}
 			// Creates a Kafka record
-			ProducerRecord<String, Object> record = new ProducerRecord<String, Object>(stream.getTopic(), strBuilder.toString());
+			ProducerRecord<String, Object> record = new ProducerRecord<String, Object>(stream.getKafkaTopic(), strBuilder.toString());
 			// Sends message to Kafka
 			StreamHandler.getInstance().getKafkaProducer().send(record);
 			

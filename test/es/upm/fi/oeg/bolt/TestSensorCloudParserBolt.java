@@ -61,7 +61,7 @@ public class TestSensorCloudParserBolt {
 		LocalCluster cluster = new LocalCluster();
 		cluster.submitTopology("sensorCloud-test", config, builder.createTopology());
 		
-		Utils.sleep(40000);
+		Utils.sleep(60000);
 	    cluster.shutdown();
 	}
 

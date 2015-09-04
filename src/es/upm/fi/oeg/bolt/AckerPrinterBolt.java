@@ -22,7 +22,7 @@ public class AckerPrinterBolt extends BaseRichBolt {
 
 	@Override
 	public void execute(Tuple tuple) {
-		System.out.println("ACK PRINTER BOLT: " + tuple);
+		System.out.println("ACK PRINTER BOLT: " + tuple.getValues());
 		collector.ack(tuple);
 	}
 

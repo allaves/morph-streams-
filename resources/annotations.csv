@@ -1,18 +1,25 @@
 Sensor Cloud phenomenon,SWEET concept
 rain_trace,Rainfall
 Rain,Rainfall
+Precipitation,Rainfall
 rainfall-per-hour,Rainfall
 air_temp,Temperature
+air-temperature,Temperature
 temperature_deg_c,Temperature
 temperature,Temperature
+Temperature,Temperature
 average-air-temperature,Temperature
 dewpt,DewPoint
 Evap,Evaporation
 wind_dir,Direction
+Wind_Direction,Direction
 average-wind-direction,Direction
 wind_spd_kmh,WindSpeed
+Wind_Speed,WindSpeed
 average-wind-speed,WindSpeed
 rel_hum,RelativeHumidity
+Relative_Humidity,RelativeHumidity
+relative-humidity,RelativeHumidity
 average-relative-humidity,RelativeHumidity
 cloud_base_m,CloudBase
 moisture,Moisture

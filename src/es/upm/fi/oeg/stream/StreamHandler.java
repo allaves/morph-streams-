@@ -13,6 +13,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ public class StreamHandler {
 	
 	private HashMap<String, Stream> streamRegistry;
 	private KafkaProducer<String, Object> kafkaProducer;	// Let's start with a unique async Kafka producer
+	private KafkaConsumer<String, String> kafkaConsumer;
 	private HashMap<String, ScheduledFuture<?>> scheduledStreamsMap;	// Maps stream ids to the scheduled task that sends data regularly
 	private ScheduledExecutorService scheduler;
 	private long streamDelay;
@@ -47,6 +49,8 @@ public class StreamHandler {
 		streamRegistry = new HashMap<String, Stream>();
 		scheduledStreamsMap = new HashMap<String, ScheduledFuture<?>>();
 		kafkaProducer = createKafkaProducer();
+		// Let's avoid calling the consumer creator until it is really needed!
+		//kafkaConsumer = createKafkaConsumer();
 		// Pool of workers with 4 threads to be scheduled
 		scheduler = Executors.newScheduledThreadPool(4);
 		streamDelay = 0;
@@ -87,6 +91,7 @@ public class StreamHandler {
 	/*
 	 * Defines the configuration of the Kafka producer
 	 * Properties are documented at http://kafka.apache.org/documentation.html#newproducerconfigs
+	 * TODO: write properties in a JSON file and move it to the resources folder
 	 */
 	private KafkaProducer<String, Object> createKafkaProducer() {
 		// Defines minimal properties of the Kafka producer (will be defined by the client in a future?)
@@ -95,9 +100,40 @@ public class StreamHandler {
 		props.put("request.required.acks", "1");
 		props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 		props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-		props.put("bootstrap.servers", "localhost:9092");
+		// To be changed when the Kafka cluster is in AWS
+		props.put("bootstrap.servers", "kafka1:9092"); 
 		// Instantiates the producer
 		return new KafkaProducer<String, Object>(props);
+	}
+	
+	/*
+	 * Access to the Kafka consumer
+	 */
+	public KafkaConsumer<String, String> getKafkaConsumer() {
+		return kafkaConsumer;
+	}
+	
+	/*
+	 * Defines the configuration of the Kafka consumer
+	 * Properties are documented at http://kafka.apache.org/documentation.html#consumerconfigs
+	 * TODO: write properties in a JSON file and move it to the resources folder
+	 */
+	private KafkaConsumer<String, String> createKafkaConsumer() {
+		// Defines minimal properties of the Kafka producer (will be defined by the client in a future?)
+		Properties props = new Properties();
+		props.put("enable.auto.commit", "true");
+	    props.put("auto.commit.interval.ms", "1000");
+	    props.put("session.timeout.ms", "30000");
+	    props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+		props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+		props.put("group.id", "test");
+		//props.put("metadata.broker.list", "localhost:9092");
+		props.put("bootstrap.servers", "kafka1:9092");
+		props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+		props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+		props.put("partition.assignment.strategy", "range");
+		// Instantiates the consumer
+		return new KafkaConsumer<String, String>(props);
 	}
 
 	/*

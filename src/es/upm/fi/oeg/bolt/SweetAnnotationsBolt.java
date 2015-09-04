@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,13 +34,18 @@ public class SweetAnnotationsBolt extends BaseRichBolt {
 	public void prepare(Map stormConf, TopologyContext context,	OutputCollector collector) {
 		this.collector = collector;
 		sweetMappings = new HashMap<String, String>();
-		readAnnotationsFile("resources/annotations.csv");
+		// Works for the IDE execution (testing), but not from in the cluster.
+		//readAnnotationsFile("resources/annotations.csv");
+		readAnnotationsFile("/annotations.csv");
 	}
 
 	
 	private void readAnnotationsFile(String filePath) {
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(new File(filePath)));
+			// Works for the IDE execution (testing), but not from in the cluster.
+			//BufferedReader br = new BufferedReader(new FileReader(new File(filePath)));
+			InputStream is = getClass().getResourceAsStream(filePath);
+			BufferedReader br = new BufferedReader(new InputStreamReader(is));
 			// Skips first line: Sensor Cloud phenomenon,SWEET concept
 			String[] lineMapping;
 			String line = br.readLine();
