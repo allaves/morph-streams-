@@ -26,7 +26,7 @@ import backtype.storm.tuple.Values;
  */
 public class SweetAnnotationsBolt extends BaseRichBolt {
 	
-	private static final String SWEET_NAMESPACE = "http://sweet.jpl.nasa.gov/2.3/sweetAll.owl/";
+	private static final String SWEET_NAMESPACE = "http://sweet.jpl.nasa.gov/2.3/sweetAll.owl#";
 	private OutputCollector collector;
 	private HashMap<String, String> sweetMappings;
 

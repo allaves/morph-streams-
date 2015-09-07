@@ -3,6 +3,7 @@ rain_trace,Rainfall
 Rain,Rainfall
 Precipitation,Rainfall
 rainfall-per-hour,Rainfall
+Rainfall_Tot-Hourly,Rainfall
 air_temp,Temperature
 air-temperature,Temperature
 temperature_deg_c,Temperature
