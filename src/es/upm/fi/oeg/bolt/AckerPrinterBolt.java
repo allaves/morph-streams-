@@ -2,6 +2,8 @@ package es.upm.fi.oeg.bolt;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.time.DateFormatUtils;
+
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.BasicOutputCollector;
@@ -22,7 +24,8 @@ public class AckerPrinterBolt extends BaseRichBolt {
 
 	@Override
 	public void execute(Tuple tuple) {
-		System.out.println("ACK PRINTER BOLT: " + tuple.getValues());
+		System.out.println("Arrival time: " + DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(System.currentTimeMillis()).toString() + 
+				" - VALUES: " + tuple.getValues());
 		collector.ack(tuple);
 	}
 

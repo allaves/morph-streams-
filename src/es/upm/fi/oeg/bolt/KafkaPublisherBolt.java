@@ -25,10 +25,10 @@ public class KafkaPublisherBolt extends BaseRichBolt {
 
 	@Override
 	public void execute(Tuple tuple) {
-		// If the tuple has the observedProperty annotated, e.g. http://sweet.jpl.nasa.gov/2.3/sweetAll.owl/Temperature
+		// If the tuple has the observedProperty annotated, e.g. http://sweet.jpl.nasa.gov/2.3/sweetAll.owl#Temperature
 		if (tuple.getStringByField("observedProperty") != null) {
 			// We get the name of the SWEET to assign it to the channel (Kafka does not allow to create topic names with strange characters)
-			String[] splittedObservedProperty = tuple.getStringByField("observedProperty").split("/");
+			String[] splittedObservedProperty = tuple.getStringByField("observedProperty").split("#");
 			int lastIndex = splittedObservedProperty.length;
 			String topic = splittedObservedProperty[lastIndex-1];
 			// Creates a new kafka record with the annotated observed property as a topic (channel)

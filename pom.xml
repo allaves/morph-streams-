@@ -251,7 +251,8 @@
 			</descriptorRefs>
 			<archive>
 				<manifest>
-				  <mainClass>es.upm.fi.oeg.topology.SensorCloudPublicationTopology</mainClass>
+				  <!-- <mainClass>es.upm.fi.oeg.topology.SensorCloudPublicationTopology</mainClass>  -->
+				  <mainClass>es.upm.fi.oeg.topology.BasicKafkaConsumerTopology</mainClass>
 				</manifest>
 			</archive>
 			<excludeSubProjects>false</excludeSubProjects>

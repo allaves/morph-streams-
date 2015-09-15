@@ -41,10 +41,12 @@ public class SensorCloudParserBolt extends BaseRichBolt {
 
 	@Override
 	public void execute(Tuple tuple) {
+		// Convert system time to xsd:dateTime
+		String observationResultTime = tuple.getString(0);
 		// Regular message: "<sample time="2015-04-13T11:11:59.000" value="100.0" sensor="libelium.356893904.356893904-9247P-Sensiron-SHT75-air.relative-humidity"/>";
 		// Tag message: "<sample time="2015-05-20T23:00:00.000" value="0.6" sensor="bom_gov_au.94963.rain.rain_trace" tags="au.csiro.ict.tasman.processor.TopicRewrite: bom_gov_au.94963.rain.rain_trace[80]"/>"
 		// Gets the string body message
-		String message = tuple.getString(0);
+		String message = tuple.getString(1);
 		String[] messageArray = message.split(" ");
 		// Tag messages ignored
 		if (messageArray.length <= 4) {
@@ -115,8 +117,6 @@ public class SensorCloudParserBolt extends BaseRichBolt {
 				lon = platformLocationCache.get(platformUrl)[1];
 			}
 			
-			// Convert system time to xsd:dateTime
-			String observationResultTime = DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(System.currentTimeMillis());
 			// Emit values
 			collector.emit(new Values(observationResultTime, observationSamplingTime, value, network, platform, sensorUrl, phenomenon, lat, lon));
 		}

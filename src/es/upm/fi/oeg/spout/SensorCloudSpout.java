@@ -3,6 +3,8 @@ package es.upm.fi.oeg.spout;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.commons.lang3.time.DateFormatUtils;
+
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -49,8 +51,10 @@ public class SensorCloudSpout extends BaseRichSpout {
 	public void nextTuple() {
 		try {
 			QueueingConsumer.Delivery delivery = consumer.nextDelivery();
+			// Convert system time to xsd:dateTime
+			String observationResultTime = DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(System.currentTimeMillis());
 			String data = new String(delivery.getBody());
-			collector.emit(new Values(data));
+			collector.emit(new Values(observationResultTime, data));
 		} catch (ShutdownSignalException | ConsumerCancelledException | InterruptedException e) {
 			e.printStackTrace();
 		}	
@@ -58,7 +62,7 @@ public class SensorCloudSpout extends BaseRichSpout {
 
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields("sensorCloudObs"));
+		declarer.declare(new Fields("observationResultTime", "sensorCloudObs"));
 	}
 
 }
