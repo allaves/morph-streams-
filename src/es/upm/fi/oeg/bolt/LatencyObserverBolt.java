@@ -28,34 +28,26 @@ import backtype.storm.tuple.Values;
 public class LatencyObserverBolt extends BaseRichBolt {
 	private OutputCollector collector;
 	private static String FILE_PATH = "/tmp/latencyResults.txt";
-	private SimpleDateFormat dateFormat;
 
 	@Override
 	public void prepare(Map stormConf, TopologyContext context,	OutputCollector collector) {
 		this.collector = collector;
-		dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	}
 
 	@Override
 	public void execute(Tuple input) {
 		// Convert system time to xsd:dateTime
 		long arrivalTime = System.currentTimeMillis();
-		String arrivalTimeStr = DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(arrivalTime);
+		//String arrivalTimeStr = DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(arrivalTime);
 		String messageId = input.getMessageId().toString();
-		String message = input.getValue(0).toString();
-		long processingTime = 0;
-		long latency = 0;
-		try {
-			processingTime = dateFormat.parse(message.split(",")[0].substring(1)).getTime();
-			// Latency in milliseconds
-			latency = arrivalTime - processingTime;
-		} catch (ParseException e1) {
-			e1.printStackTrace();
-		}
+		String message = input.getValues().toString();
+		long processingTime = Long.parseLong(input.getStringByField("observationResultTime"));
+		// Latency in milliseconds
+		long latency = arrivalTime - processingTime;
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH, true));
 			writer.newLine();
-			writer.append(latency + ", " + arrivalTimeStr + ", " + message + ", " + messageId);
+			writer.append(latency + ", " + arrivalTime + ", " + message + ", " + messageId);
 			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();

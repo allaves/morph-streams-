@@ -29,6 +29,8 @@ public class TestSensorCloudParser {
 
 	@Test
 	public void test() {
+		long currentTime = System.currentTimeMillis();
+		System.out.println(currentTime);
 		// <sample time="2015-04-13T11:11:59.000" value="100.0" sensor="libelium.356893904.356893904-9247P-Sensiron-SHT75-air.relative-humidity"/>
 		String message = "<sample time=\"2015-04-13T11:11:59.000\" value=\"48\" sensor=\"bom_gov_au.94962.air.rel_hum\"/>";
 		//String message = "<sample time=\"2015-04-13T11:11:59.000\" value=\"48\" sensor=\"dummy.dummy.dummy.dummy\"/>";
@@ -100,7 +102,9 @@ public class TestSensorCloudParser {
 			}
 			
 			// Convert system time to xsd:dateTime
-			String observationResultTime = DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(System.currentTimeMillis());
+			currentTime = System.currentTimeMillis();
+			System.out.println(currentTime);
+			String observationResultTime = DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(currentTime);
 			
 			// Print
 			System.out.println("<" + observationResultTime + ", " + observationSamplingTime + ", " + value + ", " + network + ", " + platform + ", " + sensor + ", " + phenomenon + ", " + lat + ", " + lon + ">");

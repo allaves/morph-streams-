@@ -3,6 +3,8 @@ package es.upm.fi.oeg.spout;
 import java.io.IOException;
 import java.util.Map;
 
+import net.sf.ehcache.constructs.nonstop.NonstopThreadPool;
+
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 import com.rabbitmq.client.Channel;
@@ -51,8 +53,10 @@ public class SensorCloudSpout extends BaseRichSpout {
 	public void nextTuple() {
 		try {
 			QueueingConsumer.Delivery delivery = consumer.nextDelivery();
-			// Convert system time to xsd:dateTime
-			String observationResultTime = DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(System.currentTimeMillis());
+			// Convert system time to xsd:dateTime - No need for this
+			//String observationResultTime = DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(System.currentTimeMillis());
+			
+			String observationResultTime = String.valueOf(System.currentTimeMillis());
 			String data = new String(delivery.getBody());
 			collector.emit(new Values(observationResultTime, data));
 		} catch (ShutdownSignalException | ConsumerCancelledException | InterruptedException e) {

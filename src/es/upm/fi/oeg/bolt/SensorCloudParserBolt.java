@@ -1,6 +1,8 @@
 package es.upm.fi.oeg.bolt;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -17,6 +19,7 @@ import org.json.simple.parser.ParseException;
 import com.esotericsoftware.minlog.Log;
 import com.esotericsoftware.minlog.Log.Logger;
 
+import es.upm.fi.oeg.topology.SensorCloudParsingLatencyTopology;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -35,7 +38,18 @@ public class SensorCloudParserBolt extends BaseRichBolt {
 	
 	@Override
 	public void prepare(Map stormConf, TopologyContext context,	OutputCollector collector) {
-		this.platformLocationCache = new HashMap<String, String[]>();
+		platformLocationCache = new HashMap<String, String[]>();
+		BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/cachedLocations.txt")));
+		try {
+			String line = null;
+			while ((line = reader.readLine()) != null) {
+				String[] platformLocation = line.split(",");
+				platformLocationCache.put(platformLocation[0], new String[]{platformLocation[1], platformLocation[2]});
+			}
+			reader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		this.collector = collector;
 	}
 
@@ -62,6 +76,7 @@ public class SensorCloudParserBolt extends BaseRichBolt {
 			
 			String lat = null;
 			String lon = null;
+			// TODO: store the hashmap as a CSV for those times where the SensorCloud API is not working
 			if (!(platformLocationCache.containsKey(platformUrl))) {
 				// Get platform location from API
 				String line = "";
@@ -103,6 +118,14 @@ public class SensorCloudParserBolt extends BaseRichBolt {
 						lon = lonLat[0];
 						lat = lonLat[1];
 						platformLocationCache.put(platformUrl, new String[]{lat, lon});
+						// Writing cached sensor locations to a file
+//						BufferedWriter writer = new BufferedWriter(new FileWriter("/tmp/sensorCloudLocations.txt", true));
+//						writer.newLine();
+//						writer.append(platformUrl + "," + lat + "," + lon);
+//						writer.close();
+					}
+					else {
+						platformLocationCache.put(platformUrl, new String[]{"null", "null"});
 					}
 				} catch (ParseException e) {
 					// TODO Auto-generated catch block

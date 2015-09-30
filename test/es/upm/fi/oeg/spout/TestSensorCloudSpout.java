@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.upm.fi.oeg.bolt.AckerPrinterBolt;
+import es.upm.fi.oeg.bolt.AckerWriterBolt;
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.topology.TopologyBuilder;
@@ -36,7 +37,8 @@ public class TestSensorCloudSpout {
 	public void test() {
 		TopologyBuilder builder = new TopologyBuilder();
 		builder.setSpout("sensorCloudSpout", new SensorCloudSpout());
-		builder.setBolt("printer", new AckerPrinterBolt()).shuffleGrouping("sensorCloudSpout");
+		//builder.setBolt("printer", new AckerPrinterBolt()).shuffleGrouping("sensorCloudSpout");
+		builder.setBolt("writer", new AckerWriterBolt("resources/log1h.txt")).shuffleGrouping("sensorCloudSpout");
 		
 		// Topology general configuration
 		Config config = new Config();
@@ -48,7 +50,7 @@ public class TestSensorCloudSpout {
 		LocalCluster cluster = new LocalCluster();
 		cluster.submitTopology("sensorCloud-test", config, builder.createTopology());
 		
-		Utils.sleep(15000);
+		Utils.sleep(3600000);
 	    cluster.shutdown();
 	}
 
