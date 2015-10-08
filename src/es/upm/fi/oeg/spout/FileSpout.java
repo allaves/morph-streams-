@@ -54,14 +54,14 @@ public class FileSpout extends BaseRichSpout {
 				if (!line.isEmpty()) {
 				observationResultTime = String.valueOf(System.currentTimeMillis());
 				collector.emit(new Values(observationResultTime, line));
-				//Thread.sleep(1);
+				Thread.sleep(1);
 				}
 			}
 			else {
 				reader.close();
 				System.out.println("***THE END!***");
 			}
-		} catch (IOException e) {
+		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 		}
 	}

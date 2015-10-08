@@ -10,6 +10,7 @@ temperature_deg_c,Temperature
 temperature,Temperature
 Temperature,Temperature
 average-air-temperature,Temperature
+logger-temperature,Temperature
 dewpt,DewPoint
 Evap,Evaporation
 wind_dir,Direction

@@ -78,22 +78,23 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 		
 		// ssn:observedProperty
 		String observedProperty = null;
-		if (conf.get(SSNMapping.MAPPING_OBSERVED_PROPERTY) != null) {
-			if (!((String)conf.get(SSNMapping.MAPPING_OBSERVED_PROPERTY)).startsWith("http://")) {
-				// http://example.org/observedProperty/vehiclePosition
-				observedProperty = namespace + "/observedProperty/" + (String)conf.get(SSNMapping.MAPPING_OBSERVED_PROPERTY);
-			}
-			else {
-				observedProperty = (String)conf.get(SSNMapping.MAPPING_OBSERVED_PROPERTY);
-			}
+		if (conf.get(SSNMapping.OBSERVED_PROPERTY) != null) {
+			observedProperty = (String)conf.get(SSNMapping.OBSERVED_PROPERTY);
 		}
-		else if (conf.get(SSNMapping.OBSERVED_PROPERTY) != null) {
-			observedProperty = tuple.getStringByField((String)conf.get(SSNMapping.OBSERVED_PROPERTY));
+		else if (conf.get(SSNMapping.MAPPING_OBSERVED_PROPERTY) != null) {
+			observedProperty = tuple.getStringByField((String)conf.get(SSNMapping.MAPPING_OBSERVED_PROPERTY));
 		}
 		if (observedProperty != null) {
-			graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId), 
-					ResourceFactory.createProperty(SSNMapping.NS_SSN, "observedProperty"), 
-					ResourceFactory.createResource(observedProperty)).asTriple());
+			if (observedProperty.startsWith("http://")) {
+				graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId), 
+						ResourceFactory.createProperty(SSNMapping.NS_SSN, "observedProperty"), 
+						ResourceFactory.createResource(observedProperty)).asTriple());
+			}
+			else {
+				graph.add(ResourceFactory.createStatement(ResourceFactory.createResource(observationId), 
+						ResourceFactory.createProperty(SSNMapping.NS_SSN, "observedProperty"), 
+						ResourceFactory.createPlainLiteral(observedProperty)).asTriple());
+			}
 		}
 		else {
 			System.out.println("ERROR: Incomplete observation metadata - ssn:observedProperty missing! - " + tuple);
@@ -197,7 +198,7 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 				ResourceFactory.createResource(foi)).asTriple());
 		} // No error message is added here because we do not consider the sensor metadata mandatory
 		
-		collector.emit(new Values(observationId, System.currentTimeMillis(), graph));
+		collector.emit(new Values(observationId, tuple.getStringByField("observationResultTime"), graph, observedProperty));
 		System.out.println("***CSVToSSNBolt*** -> " + graph.toString());
 		collector.ack(tuple);
 		//graph.clear();
@@ -207,7 +208,7 @@ public class CSVToSSNGraphBolt extends BaseRichBolt{
 	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields("name", "timestamp", "graph"));
+		declarer.declare(new Fields("name", "observationResultTime", "graph", "observedProperty"));
 	}
 	
 

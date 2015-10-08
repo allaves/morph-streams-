@@ -126,7 +126,7 @@ public class StreamHandler {
 	    props.put("session.timeout.ms", "30000");
 	    props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 		props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-		props.put("group.id", "test");
+	    props.put("group.id", "test");
 		//props.put("metadata.broker.list", "localhost:9092");
 		props.put("bootstrap.servers", "kafka1:9092");
 		props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");

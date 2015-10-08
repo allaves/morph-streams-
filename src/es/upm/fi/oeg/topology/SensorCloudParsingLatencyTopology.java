@@ -1,23 +1,13 @@
 package es.upm.fi.oeg.topology;
 
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Map;
-
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
-import backtype.storm.generated.KillOptions;
-import backtype.storm.generated.Nimbus.Client;
 import backtype.storm.topology.TopologyBuilder;
-import backtype.storm.utils.NimbusClient;
-import backtype.storm.utils.Utils;
 import es.upm.fi.oeg.bolt.LatencyObserverBolt;
 import es.upm.fi.oeg.bolt.SensorCloudParserBolt;
 import es.upm.fi.oeg.spout.FileSpout;
-import es.upm.fi.oeg.spout.SensorCloudSpout;
 
 /*
  * Measures the amount of time to parse Sensor Cloud messages.
@@ -27,42 +17,22 @@ import es.upm.fi.oeg.spout.SensorCloudSpout;
 public class SensorCloudParsingLatencyTopology {
 	
 	public static void main(String[] args) throws Exception {
-		// File path in the jar
-		InputStream is = SensorCloudParsingLatencyTopology.class.getResourceAsStream("/credentials-sensor-cloud.txt");
-		BufferedReader br = new BufferedReader(new InputStreamReader(is));
-		//BufferedReader br = new BufferedReader(new FileReader(new File("credentials-sensor-cloud.txt")));
-		// 1st line: user
-		String user = br.readLine();
-		// 2nd line: password
-		String password = br.readLine();
-		// 3rd line: queue
-		String queue = br.readLine();
-		br.close();
 		
 		TopologyBuilder builder = new TopologyBuilder();
 		//builder.setSpout("sensorCloudSpout", new SensorCloudSpout());
 		builder.setSpout("sensorCloudSpout", new FileSpout("/log1h.txt"));
-		builder.setBolt("sensorCloudParser", new SensorCloudParserBolt(), 4).shuffleGrouping("sensorCloudSpout");
-		//builder.setBolt("sweetAnnotator", new SweetAnnotationsBolt()).shuffleGrouping("sensorCloudParser");
-		builder.setBolt("latencyObserver", new LatencyObserverBolt(), 2).shuffleGrouping("sensorCloudParser");
+		builder.setBolt("sensorCloudParser", new SensorCloudParserBolt(), 8).shuffleGrouping("sensorCloudSpout");
+		builder.setBolt("latencyObserver", new LatencyObserverBolt("/tmp/latencyResults.txt")).shuffleGrouping("sensorCloudParser");
 		
 		// Topology general configuration
 		Config config = new Config();
 		config.setDebug(true);
-		//config.setMaxTaskParallelism(8);
-		//config.setMessageTimeoutSecs(10);
-		config.setMaxSpoutPending(1024);
-		config.put("host", "smg1-vic.it.csiro.au");
-		config.put("user", user);
-		config.put("password", password);
-		config.put("queue", queue);
 		
-		// Copied from Storm starter WordCountTopology
-		// https://github.com/apache/storm/blob/master/examples/storm-starter/src/jvm/storm/starter/WordCountTopology.java
 		// To run the topology on the Storm cluster the call must include at least one argument, e.g. the topology name
-		// Command executed on the Nimbus node: 
+		// Command executed on the Nimbus node: /opt/storm/bin/storm jar /shared/morph-streams-plus-plus-0.0.1-SNAPSHOT-jar-with-dependencies.jar... 
+		// ...es.upm.fi.oeg.topology.SensorCloudParsingLatencyTopology parsing-latency-topology
 		if (args != null && args.length > 0) {
-			config.setNumWorkers(2);
+			config.setNumWorkers(4);
 			StormSubmitter.submitTopologyWithProgressBar(args[0], config, builder.createTopology());
 
 	    }

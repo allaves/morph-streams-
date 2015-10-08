@@ -27,8 +27,12 @@ import backtype.storm.tuple.Values;
 
 public class LatencyObserverBolt extends BaseRichBolt {
 	private OutputCollector collector;
-	private static String FILE_PATH = "/tmp/latencyResults.txt";
+	private String filePath;
 
+	public LatencyObserverBolt(String filePath) {
+		this.filePath = filePath;
+	}
+	
 	@Override
 	public void prepare(Map stormConf, TopologyContext context,	OutputCollector collector) {
 		this.collector = collector;
@@ -45,7 +49,7 @@ public class LatencyObserverBolt extends BaseRichBolt {
 		// Latency in milliseconds
 		long latency = arrivalTime - processingTime;
 		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH, true));
+			BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, true));
 			writer.newLine();
 			writer.append(latency + ", " + arrivalTime + ", " + message + ", " + messageId);
 			writer.close();
